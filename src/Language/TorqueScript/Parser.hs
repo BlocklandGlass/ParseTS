@@ -95,7 +95,7 @@ opTable :: OperatorTable [(SourcePos, Token)] TSState Identity Expression
 opTable = [ []
           , [binLeft NumMultiplyToken NumberMultiplyExpression, binLeft NumDivideToken NumberDivideExpression, binLeft NumModuloToken NumberModuleExpression]
           , [binLeft NumAddToken NumberAddExpression, binLeft NumSubtractToken NumberSubtractExpression]
-          , [binLeft StringAppendToken StringAppendExpression, binLeft SpcKeyword (strBetween " "), binLeft TabKeyword (strBetween "\t")]
+          , [binLeft StrAppendToken StringAppendExpression, binLeft SpcKeyword (strBetween " "), binLeft TabKeyword (strBetween "\t")]
           , [binLeft NumEqualsToken NumberEqualsExpression, binLeft NumNoEqualsToken NumberNoEqualsExpression, binLeft StrEqualsToken StringEqualsExpression, binLeft StrNoEqualsToken StringNoEqualsExpression]
           ]
     where binary token func = Infix (func <$ staticToken token)

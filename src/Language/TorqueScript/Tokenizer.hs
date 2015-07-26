@@ -54,8 +54,8 @@ keyword = choice $ try <$>
     , ForKeyword <$ string "for"
     , BreakKeyword <$ string "break"
     , ContinueKeyword <$ string "continue"
-    , SwitchKeyword <$ string "switch"
     , StrSwitchKeyword <$ string "switch$"
+    , SwitchKeyword <$ string "switch"
     , CaseKeyword <$ string "case"
     , TabKeyword <$ string "TAB"
     , SpcKeyword <$ string "SPC"
@@ -95,6 +95,18 @@ semicolon = SemicolonToken <$ char ';'
 comma :: Parser Token
 comma = CommaToken <$ char ','
 
+assign :: Parser Token
+assign = AssignToken <$ char '=' <* notFollowedBy (char '=')
+
+doubleColon :: Parser Token
+doubleColon = DoubleColonToken <$ try (string "::")
+
+singleColon :: Parser Token
+singleColon = SingleColonToken <$ char ':'
+
+dot :: Parser Token
+dot = DotToken <$ char '.'
+
 comment :: Parser (Maybe a)
 comment = Nothing <$ (try (string "//") *> manyTill anyChar (char '\n'))
 
@@ -102,7 +114,7 @@ whitespace :: Parser (Maybe a)
 whitespace = Nothing <$ many1 (char ' ' <|> char '\t' <|> char '\n' <|> char '\r')
 
 comparison :: Parser Token
-comparison = choice
+comparison = try $ choice
     [ NumEqualsToken <$ string "=="
     , LessThanOrEqualsToken <$ string "<="
     , LessThanToken <$ string "<"
@@ -111,17 +123,37 @@ comparison = choice
     , StrEqualsToken <$ string "$="
     ]
 
+strOps :: Parser Token
+strOps = choice
+    [ StrAppendToken <$ char '@'
+    ]
+
+numOps :: Parser Token
+numOps = choice
+    [ NumAddToken <$ char '+'
+    , NumSubtractToken <$ char '-'
+    , NumMultiplyToken <$ char '*'
+    , NumDivideToken <$ char '/'
+    , NumModuloToken <$ char '%'
+    ]
+
 tsToken :: Parser (SourcePos, Token)
 tsToken = choice $ withSourcePos <$>
     [ literal
     , try (keyword <* notFollowedBy nameChar)
-    , name
-    , localVarName
-    , globalVarName
     , parens
     , semicolon
     , comma
+    , assign
     , comparison
+    , globalVarName
+    , doubleColon
+    , singleColon
+    , dot
+    , strOps
+    , numOps
+    , name
+    , localVarName
     ]
 tsTokens = catMaybes <$> many (comment <|> whitespace <|> Just <$> tsToken) <* eof
 

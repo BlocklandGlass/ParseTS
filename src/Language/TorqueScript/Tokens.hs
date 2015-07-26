@@ -44,7 +44,10 @@ data Token = StrToken String
            -- Punctuation
            | SemicolonToken
            | CommaToken
-           | SetToken
+           | AssignToken
+           | DoubleColonToken
+           | SingleColonToken
+           | DotToken
            -- Comparisons
            | NumEqualsToken
            | NumNoEqualsToken
@@ -57,7 +60,7 @@ data Token = StrToken String
            | StrEqualsToken
            | StrNoEqualsToken
            -- String operations
-           | StringAppendToken
+           | StrAppendToken
            -- Number operations
            | NumAddToken
            | NumSubtractToken
