@@ -30,14 +30,14 @@ data TopLevel = TopLevelDef (WithSourcePos Definition)
               deriving (Eq, Show)
 
 data Definition = FunctionDef Function
-                | PackageDef PackageName [Function]
+                | PackageDef { pkgDefName :: PackageName, pkgDefBody :: [Function] }
                 deriving (Eq, Show)
 
-data Function = Function FunctionName [VariableName] Block
+data Function = Function { funcDefName :: FunctionName, funcDefParams :: [VariableName], funcDefBody :: Block }
               deriving (Eq, Show)
 
 data Statement = ExprStatement Expression
-               | IfStatement (WithSourcePos Expression) Block Block
+               | IfStatement { ifStmtCond :: WithSourcePos Expression, ifStmtTrue :: Block, ifStmtFalse :: Block }
                | ReturnStatement (WithSourcePos Expression)
                deriving (Eq, Show)
 
