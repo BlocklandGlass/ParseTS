@@ -36,6 +36,7 @@ data Token = StrToken String
            | CaseKeyword
            | TabKeyword
            | SpcKeyword
+           | NewKeyword
            -- Parens
            | ParenBeginToken
            | ParenEndToken

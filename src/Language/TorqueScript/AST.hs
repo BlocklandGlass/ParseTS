@@ -19,11 +19,15 @@ import Text.Parsec.Pos(SourcePos)
 type PackageName = String
 type FunctionName = String
 type VariableName = String
+type ObjectBase = String
 
 type Block = [WithSourcePos Statement]
 
 data WithSourcePos a = WithSourcePos SourcePos a
                    deriving (Eq, Show)
+
+data ObjectMember = ObjectMember VariableName Expression
+                  deriving (Eq, Show)
 
 data TopLevel = TopLevelDef (WithSourcePos Definition)
               | TopLevelStatement (WithSourcePos Statement)
@@ -38,15 +42,18 @@ data Function = Function { funcDefName :: FunctionName, funcDefParams :: [Variab
 
 data Statement = ExprStatement Expression
                | IfStatement { ifStmtCond :: WithSourcePos Expression, ifStmtTrue :: Block, ifStmtFalse :: Block }
-               | ReturnStatement (WithSourcePos Expression)
+               | ReturnStatement (Maybe (WithSourcePos Expression))
                deriving (Eq, Show)
 
 data Expression = StrLiteralExpression String
+                | NameLiteralExpression String
+                | TaggedStrLiteralExpression String
                 | NumberLiteralExpression String
                 | BoolLiteralExpression Bool
                 | LocalVarExpression VariableName
                 | GlobalVarExpression VariableName
                 | FunctionCallExpression FunctionName [Expression]
+                | NewObjectExpression ObjectBase (Maybe Expression) [ObjectMember]
 
                 -- Comparisons
                 | NumberEqualsExpression Expression Expression

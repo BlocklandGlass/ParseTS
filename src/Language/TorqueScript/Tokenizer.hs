@@ -73,6 +73,7 @@ keyword = choice $ try <$>
     , CaseKeyword <$ string "case"
     , TabKeyword <$ string "TAB"
     , SpcKeyword <$ string "SPC"
+    , NewKeyword <$ string "new"
     ]
 
 nameFirstChar :: Parser Char
@@ -168,6 +169,7 @@ tsToken = choice $ withSourcePos <$>
     , assign
     , comparison
     , globalVarName
+    , localVarName
     , doubleColon
     , singleColon
     , dot
@@ -175,7 +177,6 @@ tsToken = choice $ withSourcePos <$>
     , numOps
     , boolOps
     , name
-    , localVarName
     ]
 tsTokens = catMaybes <$> many (comment <|> whitespace <|> Just <$> tsToken) <* eof
 

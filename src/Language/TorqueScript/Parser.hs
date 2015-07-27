@@ -47,6 +47,9 @@ staticToken x = satisfy (== x) <?> show x
 nameToken :: Parser String
 nameToken = satisfyMatch getNameToken <?> "NameToken"
 
+functionNameToken :: Parser String
+functionNameToken = (\a b -> a ++ "::" ++ b) <$> nameToken <* staticToken DoubleColonToken <*> nameToken
+
 localVarToken :: Parser String
 localVarToken = satisfyMatch getLocalVarToken <?> "LocalVarToken"
 
@@ -79,17 +82,40 @@ variableRef = satisfyMatch test <?> "variable"
               test (GlobalVarToken x) = Just $ GlobalVarExpression x
               test _ = Nothing
 
+nameRef :: Parser Expression
+nameRef = NameLiteralExpression <$> nameToken
+
 functionCall :: Parser Expression
 functionCall = FunctionCallExpression
-           <$> try (nameToken <* staticToken ParenBeginToken) -- Not using parens since we commit after the opening paren
+           <$> try (functionNameToken <* staticToken ParenBeginToken) -- Not using parens since we commit after the opening paren
            <*> expr `sepBy` comma
            <*  staticToken ParenEndToken
 
+objectBody :: Parser [ObjectMember]
+objectBody = brackets
+           $ many
+           $ ObjectMember
+         <$> nameToken
+         <*> (staticToken AssignToken *> expr)
+         <*  semicolon
+
+newObject :: Parser Expression
+newObject = staticToken NewKeyword
+         *> (NewObjectExpression
+        <$> nameToken
+        <*> parens (optionMaybe expr)
+        <*> maybeBody)
+    where maybeBody = fromMaybe [] <$> optionMaybe objectBody
+
 term :: Parser Expression
-term = functionCall
-   <|> literal
-   <|> variableRef
-   <|> parens expr
+term = choice
+     [ functionCall
+     , literal
+     , variableRef
+     , newObject
+     , nameRef
+     , parens expr
+     ]
 
 opTable :: OperatorTable [(SourcePos, Token)] TSState Identity Expression
 opTable = [ []
@@ -120,7 +146,7 @@ ifStatement = staticToken IfKeyword
 returnStatement :: Parser Statement
 returnStatement = staticToken ReturnKeyword
                *> (ReturnStatement
-              <$> withSourcePos expr)
+              <$> optionMaybe (withSourcePos expr))
               <*  semicolon
 
 statement :: Parser Statement
@@ -140,7 +166,7 @@ functionDef :: Parser Definition
 functionDef = FunctionDef <$> function
     where function = staticToken FunctionKeyword
                   *> (Function
-                 <$> nameToken
+                 <$> functionNameToken
                  <*> argList
                  <*> block)
           arguments = localVarToken `sepBy` comma
