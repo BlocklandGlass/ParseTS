@@ -41,6 +41,8 @@ data Token = StrToken String
            | ParenEndToken
            | BracketBeginToken
            | BracketEndToken
+           | IndexBeginToken
+           | IndexEndToken
            -- Punctuation
            | SemicolonToken
            | CommaToken
@@ -67,6 +69,8 @@ data Token = StrToken String
            | NumMultiplyToken
            | NumDivideToken
            | NumModuloToken
+           -- Bool operations
+           | InvertToken
            deriving (Eq, Show)
 
 getStrToken :: Token -> Maybe String

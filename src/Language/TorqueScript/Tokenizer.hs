@@ -25,8 +25,20 @@ import Control.Applicative hiding(many, (<|>))
 withSourcePos :: Parser a -> Parser (SourcePos, a)
 withSourcePos parser = (,) <$> getPosition <*> parser
 
+anyExcept :: Char -> Parser Char
+anyExcept char = satisfy (/= char)
+
+stringChar :: Char -> Parser String
+stringChar surrounding = try (string ['\\', surrounding]) <|> ((: []) <$> anyExcept surrounding)
+
+anyStringLiteral :: Char -> Parser Token
+anyStringLiteral surrounding = StrToken . concat <$> (char surrounding *> manyTill (stringChar surrounding) (char surrounding))
+
 stringLiteral :: Parser Token
-stringLiteral = StrToken <$> (char '"' *> manyTill anyChar (char '"'))
+stringLiteral = anyStringLiteral '"'
+
+taggedStringLiteral :: Parser Token
+taggedStringLiteral = anyStringLiteral '\''
 
 int :: Parser String
 int = many1 digit
@@ -38,8 +50,10 @@ number = (++) <$> int <*> (fromMaybe "" <$> optionMaybe decimals)
 numberLiteral :: Parser Token
 numberLiteral = NumToken <$> number
 
+literal :: Parser Token
 literal = choice
     [ stringLiteral
+    , taggedStringLiteral
     , numberLiteral
     ]
 
@@ -87,6 +101,8 @@ parens = choice
     , ParenEndToken <$ char ')'
     , BracketBeginToken <$ char '{'
     , BracketEndToken <$ char '}'
+    , IndexBeginToken <$ char '['
+    , IndexEndToken <$ char ']'
     ]
 
 semicolon :: Parser Token
@@ -116,10 +132,10 @@ whitespace = Nothing <$ many1 (char ' ' <|> char '\t' <|> char '\n' <|> char '\r
 comparison :: Parser Token
 comparison = try $ choice
     [ NumEqualsToken <$ string "=="
+    , LessThanToken <$ char '<' <* notFollowedBy (char '=')
     , LessThanOrEqualsToken <$ string "<="
-    , LessThanToken <$ string "<"
+    , GreaterThanToken <$ char '>' <* notFollowedBy (char '=')
     , GreaterThanOrEqualsToken <$ string ">="
-    , GreaterThanToken <$ string ">"
     , StrEqualsToken <$ string "$="
     ]
 
@@ -137,6 +153,11 @@ numOps = choice
     , NumModuloToken <$ char '%'
     ]
 
+boolOps :: Parser Token
+boolOps = choice
+    [ InvertToken <$ char '!'
+    ]
+
 tsToken :: Parser (SourcePos, Token)
 tsToken = choice $ withSourcePos <$>
     [ literal
@@ -152,6 +173,7 @@ tsToken = choice $ withSourcePos <$>
     , dot
     , strOps
     , numOps
+    , boolOps
     , name
     , localVarName
     ]
