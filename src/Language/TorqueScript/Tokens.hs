@@ -62,13 +62,13 @@ data Token = StrToken String
            | StrEqualsToken
            | StrNoEqualsToken
            -- String operations
-           | StrAppendToken
+           | AppendToken
            -- Number operations
-           | NumAddToken
-           | NumSubtractToken
-           | NumMultiplyToken
-           | NumDivideToken
-           | NumModuloToken
+           | AddToken
+           | SubtractToken
+           | MultiplyToken
+           | DivideToken
+           | ModuloToken
            -- Bool operations
            | InvertToken
            deriving (Eq, Show)

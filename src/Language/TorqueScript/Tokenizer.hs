@@ -141,16 +141,16 @@ comparison = try $ choice
 
 strOps :: Parser Token
 strOps = choice
-    [ StrAppendToken <$ char '@'
+    [ AppendToken <$ char '@'
     ]
 
 numOps :: Parser Token
 numOps = choice
-    [ NumAddToken <$ char '+'
-    , NumSubtractToken <$ char '-'
-    , NumMultiplyToken <$ char '*'
-    , NumDivideToken <$ char '/'
-    , NumModuloToken <$ char '%'
+    [ AddToken <$ char '+'
+    , SubtractToken <$ char '-'
+    , MultiplyToken <$ char '*'
+    , DivideToken <$ char '/'
+    , ModuloToken <$ char '%'
     ]
 
 boolOps :: Parser Token
