@@ -35,7 +35,7 @@ data TopLevel = TopLevelDef (WithSourcePos Definition)
               deriving (Eq, Show)
 
 data Definition = FunctionDef Function
-                | PackageDef { pkgDefName :: PackageName, pkgDefBody :: [Function] }
+                | PackageDef { pkgDefName :: PackageName, pkgDefBody :: [WithSourcePos Function] }
                 deriving (Eq, Show)
 
 data Function = Function { funcDefName :: FunctionName, funcDefParams :: [VariableName], funcDefBody :: Block }
@@ -44,6 +44,7 @@ data Function = Function { funcDefName :: FunctionName, funcDefParams :: [Variab
 data Reference = LocalVarReference VariableName
                | GlobalVarReference VariableName
                | FieldReference Expression VariableName
+               | IndexReference Reference [WithSourcePos Expression]
                deriving (Eq, Show)
 
 data SwitchCase = SwitchCase Expression Block
@@ -57,6 +58,8 @@ data Statement = ExprStatement Expression
                | StrSwitchStatement { strSwitchStmtCond :: WithSourcePos Expression, strSwitchStmtBody :: SwitchCases }
                | ForStatement { forStmtSetup :: Maybe (WithSourcePos Expression), forStmtCond :: WithSourcePos Expression, forStmtBetween :: Maybe (WithSourcePos Expression), forStmtBody :: Block }
                | ReturnStatement (Maybe (WithSourcePos Expression))
+               | BreakStatement
+               | ContinueStatement
                deriving (Eq, Show)
 
 data Expression = StrLiteralExpression String
@@ -66,9 +69,9 @@ data Expression = StrLiteralExpression String
                 | BoolLiteralExpression Bool
                 | ReferenceExpression Reference
                 | AssignExpression Reference Expression
-                | FunctionCallExpression FunctionName [Expression]
-                | NewObjectExpression ObjectBase (Maybe Expression) [ObjectMember]
-                | MethodCallExpression Expression FieldName [Expression]
+                | FunctionCallExpression FunctionName [WithSourcePos Expression]
+                | NewObjectExpression ObjectBase (Maybe (WithSourcePos Expression)) [ObjectMember]
+                | MethodCallExpression Expression FieldName [WithSourcePos Expression]
 
                 -- Comparisons
                 | NumberEqualsExpression Expression Expression
@@ -91,4 +94,9 @@ data Expression = StrLiteralExpression String
                 | NumberMultiplyExpression Expression Expression
                 | NumberDivideExpression Expression Expression
                 | NumberModuleExpression Expression Expression
+                | NumberIncrementExpression Reference
+                | NumberDecrementExpression Reference
+
+                -- Bool operations
+                | BoolInvertExpression Expression
                 deriving (Eq, Show)

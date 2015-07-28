@@ -60,6 +60,7 @@ literal = choice
 keyword :: Parser Token
 keyword = choice $ try <$>
     [ FunctionKeyword <$ string "function"
+    , PackageKeyword <$ string "package"
     , ReturnKeyword <$ string "return"
     , TrueKeyword <$ string "true"
     , FalseKeyword <$ string "false"
@@ -74,6 +75,7 @@ keyword = choice $ try <$>
     , DefaultKeyword <$ string "default"
     , TabKeyword <$ string "TAB"
     , SpcKeyword <$ string "SPC"
+    , NlKeyword <$ string "NL"
     , NewKeyword <$ string "new"
     ]
 
@@ -139,6 +141,7 @@ comparison = try $ choice
     , GreaterThanToken <$ char '>' <* notFollowedBy (char '=')
     , GreaterThanOrEqualsToken <$ string ">="
     , StrEqualsToken <$ string "$="
+    , StrNoEqualsToken <$ string "!$="
     ]
 
 strOps :: Parser Token
@@ -148,7 +151,9 @@ strOps = choice
 
 numOps :: Parser Token
 numOps = choice
-    [ AddToken <$ char '+'
+    [ IncrementToken <$ try (string "++")
+    , DecrementToken <$ try (string "--")
+    , AddToken <$ char '+'
     , SubtractToken <$ char '-'
     , MultiplyToken <$ char '*'
     , DivideToken <$ char '/'

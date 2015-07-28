@@ -23,6 +23,7 @@ data Token = StrToken String
            | LocalVarToken String
            -- Keywords
            | FunctionKeyword
+           | PackageKeyword
            | ReturnKeyword
            | TrueKeyword
            | FalseKeyword
@@ -37,6 +38,7 @@ data Token = StrToken String
            | DefaultKeyword
            | TabKeyword
            | SpcKeyword
+           | NlKeyword
            | NewKeyword
            -- Parens
            | ParenBeginToken
@@ -71,6 +73,8 @@ data Token = StrToken String
            | MultiplyToken
            | DivideToken
            | ModuloToken
+           | IncrementToken
+           | DecrementToken
            -- Bool operations
            | InvertToken
            deriving (Eq, Show)
