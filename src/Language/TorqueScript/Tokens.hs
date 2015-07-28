@@ -34,16 +34,17 @@ data Token = StrToken String
            | SwitchKeyword
            | StrSwitchKeyword
            | CaseKeyword
+           | DefaultKeyword
            | TabKeyword
            | SpcKeyword
            | NewKeyword
            -- Parens
            | ParenBeginToken
            | ParenEndToken
+           | BraceBeginToken
+           | BraceEndToken
            | BracketBeginToken
            | BracketEndToken
-           | IndexBeginToken
-           | IndexEndToken
            -- Punctuation
            | SemicolonToken
            | CommaToken

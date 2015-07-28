@@ -71,6 +71,7 @@ keyword = choice $ try <$>
     , StrSwitchKeyword <$ string "switch$"
     , SwitchKeyword <$ string "switch"
     , CaseKeyword <$ string "case"
+    , DefaultKeyword <$ string "default"
     , TabKeyword <$ string "TAB"
     , SpcKeyword <$ string "SPC"
     , NewKeyword <$ string "new"
@@ -100,10 +101,10 @@ parens :: Parser Token
 parens = choice
     [ ParenBeginToken <$ char '('
     , ParenEndToken <$ char ')'
-    , BracketBeginToken <$ char '{'
-    , BracketEndToken <$ char '}'
-    , IndexBeginToken <$ char '['
-    , IndexEndToken <$ char ']'
+    , BraceBeginToken <$ char '{'
+    , BraceEndToken <$ char '}'
+    , BracketBeginToken <$ char '['
+    , BracketEndToken <$ char ']'
     ]
 
 semicolon :: Parser Token
