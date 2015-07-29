@@ -5,7 +5,6 @@ import Language.TorqueScript.AST
 
 import Control.Applicative
 import Data.Maybe
-import Text.Parsec.Pos(SourcePos)
 
 type Complaint = WithSourcePos String
 

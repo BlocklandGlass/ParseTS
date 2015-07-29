@@ -3,7 +3,6 @@ module Language.TorqueScript.Tokenizer (tokenize) where
 import Language.TorqueScript.Tokens
 import Text.Parsec
 import Text.Parsec.Text
-import Data.List
 import Data.Maybe
 import Data.Text(Text)
 import Control.Applicative hiding(many, (<|>))
@@ -12,7 +11,7 @@ withSourcePos :: Parser a -> Parser (SourcePos, a)
 withSourcePos parser = (,) <$> getPosition <*> parser
 
 anyExcept :: Char -> Parser Char
-anyExcept char = satisfy (/= char)
+anyExcept character = satisfy (/= character)
 
 stringChar :: Char -> Parser String
 stringChar surrounding = try (string ['\\', surrounding]) <|> ((: []) <$> anyExcept surrounding)
@@ -170,6 +169,7 @@ tsToken = choice $ withSourcePos <$>
     , boolOps
     , name
     ]
+tsTokens :: Parser [(SourcePos, Token)]
 tsTokens = catMaybes <$> many (comment <|> whitespace <|> Just <$> tsToken) <* eof
 
 tokenize :: SourceName -> Text -> Either ParseError [(SourcePos, Token)]

@@ -155,11 +155,11 @@ opTable beforePos = [ [prefix InvertToken BoolInvertExpression]
                       ]
                     ]
     where binary opToken func = Infix $ do
-              staticToken opToken
+              _ <- staticToken opToken
               afterPos <- getPosition
               return (\a b -> func (WithSourcePos beforePos a) (WithSourcePos afterPos b))
           binLeft opToken func = binary opToken func AssocLeft
-          strBetween between a b = a `StringAppendExpression` WithSourcePos beforePos (WithSourcePos beforePos (StrLiteralExpression between) `StringAppendExpression` b)
+          strBetween addBetween a b = a `StringAppendExpression` WithSourcePos beforePos (WithSourcePos beforePos (StrLiteralExpression addBetween) `StringAppendExpression` b)
           prefix opToken func = Prefix (func . WithSourcePos beforePos <$ staticToken opToken)
 
 expr :: Parser Expression

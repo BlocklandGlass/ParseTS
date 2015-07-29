@@ -1,7 +1,5 @@
 module Language.TorqueScript.Tokens where
 
-import Data.Text
-
 data Token = StrToken String
            | NumToken String
            | NameToken String
