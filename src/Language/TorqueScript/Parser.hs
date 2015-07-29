@@ -18,7 +18,9 @@ import Control.Monad.Identity(Identity)
 import Data.List
 import Data.Maybe(fromMaybe, catMaybes)
 import Data.Text(Text)
+#ifdef DEBUG_FLAG
 import Debug.Trace
+#endif
 
 type TSState = ()
 type Parser a = Parsec [(SourcePos, Token)] TSState a
