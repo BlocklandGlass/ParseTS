@@ -150,6 +150,11 @@ numOps :: Parser Token
 numOps = choice
     [ IncrementToken <$ try (string "++")
     , DecrementToken <$ try (string "--")
+    , AssignAddToken <$ try (string "+=")
+    , AssignSubtractToken <$ try (string "-=")
+    , AssignMultiplyToken <$ try (string "*=")
+    , AssignDivideToken <$ try (string "/=")
+    , AssignModuloToken <$ try (string "%=")
     , AddToken <$ char '+'
     , SubtractToken <$ char '-'
     , MultiplyToken <$ char '*'

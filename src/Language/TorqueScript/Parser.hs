@@ -129,14 +129,23 @@ maybeFieldAccess = do
 maybeAssignment :: Parser Expression
 maybeAssignment = do
     e <- maybeFieldAccess
+    pos <- getPosition
     case e of
         ReferenceExpression ref -> choice
             [ AssignExpression ref <$ staticToken AssignToken <*> withSourcePos expr
-            , NumberIncrementExpression ref <$ staticToken IncrementToken
-            , NumberDecrementExpression ref <$ staticToken DecrementToken
+            , AssignExpression ref <$ staticToken AssignAddToken <*> synthOp pos NumberAddExpression ref (withSourcePos expr)
+            , AssignExpression ref <$ staticToken AssignSubtractToken <*> synthOp pos NumberSubtractExpression ref (withSourcePos expr)
+            , AssignExpression ref <$ staticToken AssignMultiplyToken <*> synthOp pos NumberMultiplyExpression ref (withSourcePos expr)
+            , AssignExpression ref <$ staticToken AssignDivideToken <*> synthOp pos NumberDivideExpression ref (withSourcePos expr)
+            , AssignExpression ref <$ staticToken AssignModuloToken <*> synthOp pos NumberModuloExpression ref (withSourcePos expr)
+            , AssignExpression ref <$ staticToken IncrementToken <*> synthOpOne pos NumberAddExpression ref
+            , AssignExpression ref <$ staticToken DecrementToken <*> synthOpOne pos NumberSubtractExpression ref
             , return e
             ]
         _ -> return e
+    where one = NumberLiteralExpression "1"
+          synthOp pos op ref rhs = WithSourcePos pos . (WithSourcePos pos (ReferenceExpression ref) `op`) <$> rhs
+          synthOpOne pos op ref = synthOp pos op ref $ return $ WithSourcePos pos one
 
 opTable :: SourcePos -> OperatorTable [(SourcePos, Token)] TSState Identity Expression
 opTable beforePos = [ [prefix InvertToken BoolInvertExpression
@@ -169,8 +178,19 @@ opTable beforePos = [ [prefix InvertToken BoolInvertExpression
           strBetween addBetween a b = a `StringAppendExpression` WithSourcePos beforePos (WithSourcePos beforePos (StrLiteralExpression addBetween) `StringAppendExpression` b)
           prefix opToken func = Prefix (func . WithSourcePos beforePos <$ staticToken opToken)
 
+ternaryTerm :: Parser Expression
+ternaryTerm = join (buildExpressionParser <$> (opTable <$> getPosition) <*> return maybeAssignment)
+
+ternaryExpr :: Parser Expression
+ternaryExpr = TernaryExpression
+          <$> try (withSourcePos ternaryTerm
+          <*  staticToken QuestionMarkToken)
+          <*> withSourcePos ternaryTerm
+          <*  staticToken SingleColonToken
+          <*> withSourcePos expr
+
 expr :: Parser Expression
-expr = join (buildExpressionParser <$> (opTable <$> getPosition) <*> return maybeAssignment)
+expr = ternaryExpr <|> ternaryTerm
 
 semicolon :: Parser ()
 semicolon = () <$ staticToken SemicolonToken

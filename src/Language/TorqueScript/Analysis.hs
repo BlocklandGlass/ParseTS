@@ -87,6 +87,7 @@ instance HasSubExprs Expression where
     walkSubExprs (AssignExpression ref expr) = walkSubExprs ref ++ exprAndSubs expr
     walkSubExprs (CallExpression call) = walkSubExprs call
     walkSubExprs (NewObjectExpression _ name body) = exprAndSubsMaybe name ++ walkSubExprs body
+    walkSubExprs (TernaryExpression cond ifExpr elseExpr) = exprAndSubs cond ++ exprAndSubs ifExpr ++ exprAndSubs elseExpr
     walkSubExprs (NumberEqualsExpression a b) = exprAndSubs a ++ exprAndSubs b
     walkSubExprs (NumberNoEqualsExpression a b) = exprAndSubs a ++ exprAndSubs b
     walkSubExprs (NumberLessThanExpression a b) = exprAndSubs a ++ exprAndSubs b
@@ -103,8 +104,6 @@ instance HasSubExprs Expression where
     walkSubExprs (NumberMultiplyExpression a b) = exprAndSubs a ++ exprAndSubs b
     walkSubExprs (NumberDivideExpression a b) = exprAndSubs a ++ exprAndSubs b
     walkSubExprs (NumberModuloExpression a b) = exprAndSubs a ++ exprAndSubs b
-    walkSubExprs (NumberIncrementExpression a) = walkSubExprs a
-    walkSubExprs (NumberDecrementExpression a) = walkSubExprs a
     walkSubExprs (BoolInvertExpression a) = walkSubExprs a
 
 instance HasSubExprs SwitchCase where

@@ -69,6 +69,7 @@ data Expression = StrLiteralExpression String
                 | AssignExpression Reference SPExpression
                 | CallExpression Call
                 | NewObjectExpression ObjectBase (Maybe SPExpression) [ObjectMember]
+                | TernaryExpression { ternaryExprCond :: SPExpression, ternaryExprTrue :: SPExpression, ternaryExprFalse :: SPExpression }
 
                 -- Comparisons
                 | NumberEqualsExpression SPExpression SPExpression
@@ -91,8 +92,6 @@ data Expression = StrLiteralExpression String
                 | NumberMultiplyExpression SPExpression SPExpression
                 | NumberDivideExpression SPExpression SPExpression
                 | NumberModuloExpression SPExpression SPExpression
-                | NumberIncrementExpression Reference
-                | NumberDecrementExpression Reference
 
                 -- Bool operations
                 | BoolInvertExpression SPExpression

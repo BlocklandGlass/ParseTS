@@ -60,6 +60,11 @@ data Token = StrToken String
            | MultiplyToken
            | DivideToken
            | ModuloToken
+           | AssignAddToken
+           | AssignSubtractToken
+           | AssignMultiplyToken
+           | AssignDivideToken
+           | AssignModuloToken
            | IncrementToken
            | DecrementToken
            -- Bool operations
