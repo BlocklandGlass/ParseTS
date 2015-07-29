@@ -3,7 +3,6 @@ version: 0.1.0.0
 cabal-version: >=1.10
 build-type: Simple
 license: AllRightsReserved
-license-file: LICENSE
 maintainer: teo@nullable.se
 category: Development
 author: Teo Klestrup
