@@ -10,8 +10,9 @@ import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
 import qualified Data.HashMap.Strict as M
 import System.Directory
-import System.FilePath((</>), takeExtension)
 import System.Exit
+import System.Environment
+import System.FilePath((</>), takeExtension)
 import Text.Parsec.Pos
 
 instance ToJSON AnalysisResult where
@@ -57,4 +58,8 @@ fileTree base cur = do
     where isTS filename = takeExtension filename `elem` [".cs", ".gui"]
 
 main :: IO ()
-main = fileTree "." "BlocklandGlass" >>= sequence_ . fmap mainFile
+main = do
+    args <- getArgs
+    case args of
+        [path] -> fileTree path "" >>= sequence_ . fmap mainFile
+        _ -> error "Usage: parsets <path>"
