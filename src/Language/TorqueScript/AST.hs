@@ -28,6 +28,9 @@ data WithSourcePos a = WithSourcePos SourcePos a
                    deriving (Eq, Show)
 type SPExpression = WithSourcePos Expression
 
+instance Functor WithSourcePos where
+    fmap f (WithSourcePos pos a) = WithSourcePos pos $ f a
+
 data ObjectMember = ObjectMember VariableName SPExpression
                   deriving (Eq, Show)
 

@@ -11,8 +11,8 @@ type Complaint = WithSourcePos String
 
 data AnalysisResult = AnalysisResult
                     { analysisComplaints :: [Complaint]
-                    , functions :: [WithSourcePos Function]
-                    , packages :: [WithSourcePos Package]
+                    , functions :: [WithSourcePos FunctionName]
+                    , packages :: [WithSourcePos PackageName]
                     }
                     deriving (Eq, Show)
 
@@ -32,4 +32,4 @@ complainAboutEvilFunctions tree = catMaybes $ checkEvilCall . stripObjectInfo <$
           stripObjectInfo (WithSourcePos pos (MethodCall _ name args)) = WithSourcePos pos (FunctionCall name args)
 
 analyzeAST :: [TopLevel] -> AnalysisResult
-analyzeAST tree = AnalysisResult (complainAboutEvilFunctions tree) (allFunctions tree) (allPackages tree)
+analyzeAST tree = AnalysisResult (complainAboutEvilFunctions tree) (fmap funcDefName <$> allFunctions tree) (fmap pkgDefName <$> allPackages tree)
