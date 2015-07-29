@@ -86,7 +86,7 @@ instance HasSubExprs Expression where
     walkSubExprs (ReferenceExpression ref) = walkSubExprs ref
     walkSubExprs (AssignExpression ref expr) = walkSubExprs ref ++ exprAndSubs expr
     walkSubExprs (CallExpression call) = walkSubExprs call
-    walkSubExprs (NewObjectExpression _ name body) = exprAndSubsMaybe name ++ walkSubExprs body
+    walkSubExprs (NewObjectExpression obj) = walkSubExprs obj
     walkSubExprs (TernaryExpression cond ifExpr elseExpr) = exprAndSubs cond ++ exprAndSubs ifExpr ++ exprAndSubs elseExpr
     walkSubExprs (NumberEqualsExpression a b) = exprAndSubs a ++ exprAndSubs b
     walkSubExprs (NumberNoEqualsExpression a b) = exprAndSubs a ++ exprAndSubs b
@@ -120,5 +120,10 @@ instance HasSubExprs Call where
     walkSubExprs (FunctionCall _ args) = args >>= exprAndSubs
     walkSubExprs (MethodCall obj _ args) = exprAndSubs obj ++ (args >>= exprAndSubs)
 
+instance HasSubExprs NewObject where
+    walkSubExprs (NewObject _ name body) = exprAndSubsMaybe name ++ walkSubExprs body
+
 instance HasSubExprs ObjectMember where
-    walkSubExprs (ObjectMember _ expr) = exprAndSubs expr
+    walkSubExprs (ObjectFieldMember _ expr) = exprAndSubs expr
+    walkSubExprs (ObjectIndexedFieldMember _ indexes expr) = (indexes >>= exprAndSubs) ++ exprAndSubs expr
+    walkSubExprs (NestedObjectMember obj) = walkSubExprs obj

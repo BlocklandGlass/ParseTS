@@ -17,7 +17,12 @@ type SPExpression = WithSourcePos Expression
 instance Functor WithSourcePos where
     fmap f (WithSourcePos pos a) = WithSourcePos pos $ f a
 
-data ObjectMember = ObjectMember VariableName SPExpression
+data NewObject = NewObject ObjectBase (Maybe SPExpression) [ObjectMember]
+               deriving (Eq, Show)
+
+data ObjectMember = ObjectFieldMember VariableName SPExpression
+                  | ObjectIndexedFieldMember VariableName [SPExpression] SPExpression
+                  | NestedObjectMember NewObject
                   deriving (Eq, Show)
 
 data TopLevel = TopLevelDef (WithSourcePos Definition)
@@ -68,7 +73,7 @@ data Expression = StrLiteralExpression String
                 | ReferenceExpression Reference
                 | AssignExpression Reference SPExpression
                 | CallExpression Call
-                | NewObjectExpression ObjectBase (Maybe SPExpression) [ObjectMember]
+                | NewObjectExpression NewObject
                 | TernaryExpression { ternaryExprCond :: SPExpression, ternaryExprTrue :: SPExpression, ternaryExprFalse :: SPExpression }
 
                 -- Comparisons

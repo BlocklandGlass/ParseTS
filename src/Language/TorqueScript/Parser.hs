@@ -92,14 +92,30 @@ functionCall = FunctionCall
 objectBody :: Parser [ObjectMember]
 objectBody = braces
            $ many
-           $ ObjectMember
-         <$> nameToken
-         <*> (staticToken AssignToken *> withSourcePos expr)
-         <*  semicolon
+           $ choice
+           [ indexedObjectField
+           , objectField
+           , NestedObjectMember <$> newObject <* semicolon
+           ]
 
-newObject :: Parser Expression
+indexedObjectField :: Parser ObjectMember
+indexedObjectField = try (ObjectIndexedFieldMember
+                 <$> nameToken
+                 <*> brackets (many1 $ withSourcePos expr))
+                 <*  staticToken AssignToken
+                 <*> withSourcePos expr
+                 <*  semicolon
+
+objectField :: Parser ObjectMember
+objectField = ObjectFieldMember
+          <$> nameToken
+          <*  staticToken AssignToken
+          <*> withSourcePos expr
+          <*  semicolon
+
+newObject :: Parser NewObject
 newObject = staticToken NewKeyword
-         *> (NewObjectExpression
+         *> (NewObject
         <$> nameToken
         <*> parens (optionMaybe $ withSourcePos expr)
         <*> maybeBody)
@@ -110,7 +126,7 @@ term = choice
      [ CallExpression <$> functionCall
      , literal
      , ReferenceExpression <$> variableRef
-     , newObject
+     , NewObjectExpression <$> newObject
      , nameRef
      , parens expr
      ]
