@@ -7,6 +7,9 @@ import Data.Maybe(catMaybes)
 class HasPackages a where
     allPackages :: a -> [WithSourcePos Package]
 
+instance HasPackages a => HasPackages [a] where
+    allPackages xs = xs >>= allPackages
+
 instance HasPackages TopLevel where
     allPackages (TopLevelDef def) = allPackages def
     allPackages _ = []
@@ -17,6 +20,9 @@ instance HasPackages (WithSourcePos Definition) where
 
 class HasFunctions a where
     allFunctions :: a -> [WithSourcePos Function]
+
+instance HasFunctions a => HasFunctions [a] where
+    allFunctions xs = xs >>= allFunctions
 
 instance HasFunctions TopLevel where
     allFunctions (TopLevelDef def) = allFunctions def

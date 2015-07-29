@@ -25,5 +25,7 @@ executable parsets
                    Language.TorqueScript.Tokenizer
                    Language.TorqueScript.Parser
                    Language.TorqueScript.Analysis
+                   Language.TorqueScript.Rules
+                   Language.TorqueScript
 
 
