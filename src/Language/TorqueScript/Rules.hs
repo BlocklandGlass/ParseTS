@@ -6,10 +6,16 @@ import Language.TorqueScript.AST
 import Control.Applicative
 import Data.Maybe
 
-type Complaint = WithSourcePos String
+data Complaint = EvilFunctionCall FunctionName
+               deriving (Eq)
+
+instance Show Complaint where
+    show (EvilFunctionCall name) = "Call to evil function \"" ++ name ++ "\"! D:"
+
+type SPComplaint = WithSourcePos Complaint
 
 data AnalysisResult = AnalysisResult
-                    { analysisComplaints :: [Complaint]
+                    { analysisComplaints :: [SPComplaint]
                     , analysisFunctions :: [WithSourcePos FunctionName]
                     , analysisPackages :: [WithSourcePos PackageName]
                     }
@@ -21,14 +27,13 @@ evilFunctions = [ "eval"
                 , "schedule"
                 ]
 
-complainAboutEvilFunctions :: HasSubExprs a => a -> [Complaint]
-complainAboutEvilFunctions tree = catMaybes $ checkEvilCall . stripObjectInfo <$> walkFunctionCalls tree
-    where checkEvilCall (WithSourcePos pos (FunctionCall "schedule" (_ : WithSourcePos _ (StrLiteralExpression name) : args))) = checkEvilCall $ WithSourcePos pos $ FunctionCall name args
-          checkEvilCall (WithSourcePos pos (FunctionCall name _)) | name `elem` evilFunctions = Just $ WithSourcePos pos $ "Call to evil function \"" ++ name ++ "\"! D:"
+complainAboutEvilFunctions :: HasSubExprs a => a -> [SPComplaint]
+complainAboutEvilFunctions tree = catMaybes $ checkEvilCall <$> walkFunctionCalls tree
+    where checkEvilCall :: WithSourcePos Call -> Maybe SPComplaint
+          checkEvilCall (WithSourcePos pos (FunctionCall "schedule" (_ : WithSourcePos _ (StrLiteralExpression name) : args))) = checkEvilCall $ WithSourcePos pos $ FunctionCall name args
+          checkEvilCall (WithSourcePos pos (FunctionCall name _)) | name `elem` evilFunctions = Just $ WithSourcePos pos $ EvilFunctionCall name
                                                                   | otherwise = Nothing
-          checkEvilCall (WithSourcePos pos _) = Just $ WithSourcePos pos "This shouldn't happen!"
-          stripObjectInfo (WithSourcePos pos call@(FunctionCall _ _)) = WithSourcePos pos call
-          stripObjectInfo (WithSourcePos pos (MethodCall _ name args)) = WithSourcePos pos (FunctionCall name args)
+          checkEvilCall (WithSourcePos pos (MethodCall _ name args)) = checkEvilCall $ WithSourcePos pos $ FunctionCall name args
 
 analyzeAST :: [TopLevel] -> AnalysisResult
 analyzeAST tree = AnalysisResult (complainAboutEvilFunctions tree) (fmap funcDefName <$> allFunctions tree) (fmap pkgDefName <$> allPackages tree)

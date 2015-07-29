@@ -17,7 +17,7 @@ import Text.Parsec.Pos
 
 instance ToJSON AnalysisResult where
     toJSON result = object
-                  [ "complaints" .= analysisComplaints result
+                  [ "complaints" .= show (analysisComplaints result)
                   , "functions" .= analysisFunctions result
                   , "packages" .= analysisPackages result
                   ]
