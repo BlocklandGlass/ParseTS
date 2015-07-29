@@ -1,17 +1,3 @@
------------------------------------------------------------------------------
---
--- Module      :  Language.TorqueScript.Tokens
--- Copyright   :
--- License     :  AllRightsReserved
---
--- Maintainer  :  teo@nullable.se
--- Stability   :
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
-
 module Language.TorqueScript.Tokens where
 
 import Data.Text

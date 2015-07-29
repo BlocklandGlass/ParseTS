@@ -1,17 +1,3 @@
------------------------------------------------------------------------------
---
--- Module      :  Language.TorqueScript.Tokenizer
--- Copyright   :
--- License     :  AllRightsReserved
---
--- Maintainer  :  teo@nullable.se
--- Stability   :
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
-
 module Language.TorqueScript.Tokenizer (tokenize) where
 
 import Language.TorqueScript.Tokens

@@ -1,38 +1,37 @@
------------------------------------------------------------------------------
---
--- Module      :  Main
--- Copyright   :
--- License     :  AllRightsReserved
---
--- Maintainer  :  teo@nullable.se
--- Stability   :
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
+module Main (main) where
 
-module Main (
-main
-) where
+import Language.TorqueScript
+import Language.TorqueScript.AST(WithSourcePos(..))
 
-import qualified Data.Text.IO as TIO
-import Text.Parsec.Error
-import Language.TorqueScript.AST
-import Language.TorqueScript.Tokens
-import Language.TorqueScript.Tokenizer
-import Language.TorqueScript.Parser
-
-import Data.Either
+import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as BSC8
+import qualified Data.HashMap.Strict as M
 import System.Exit
+import Text.Parsec.Pos
 
-parseFromFile :: FilePath -> IO (Either ParseError [TopLevel])
-parseFromFile path = do
-    contents <- TIO.readFile path
-    return $ parseTS path contents
+instance ToJSON AnalysisResult where
+    toJSON result = object
+                  [ "complaints" .= analysisComplaints result
+                  , "functions" .= analysisFunctions result
+                  , "packages" .= analysisPackages result
+                  ]
+
+instance ToJSON a => ToJSON (WithSourcePos a) where
+    toJSON (WithSourcePos pos x) = combine (toJSON x) (toJSON pos)
+        where combine (Object xJSON) (Object posJSON) = Object $ M.union xJSON posJSON
+              combine xJSON posJSON@(Object _) = combine (object
+                                               [ "value" .= xJSON
+                                               ]) posJSON
+              combine _ _ = error "toJSON pos wasn't an object, this should never happen!"
+
+instance ToJSON SourcePos where
+    toJSON pos = object
+               [ "line" .= sourceLine pos
+               , "column" .= sourceColumn pos
+               , "file" .= sourceName pos
+               ]
 
 main :: IO ()
 main = do
-    parseResult <- parseFromFile "test.cs"
-    print parseResult
-    either (const exitFailure) (const exitSuccess) parseResult
+    analysisResult <- analyzeFromFile "test.cs"
+    either (\a -> print a >> exitFailure) (BSC8.putStrLn . encode) analysisResult

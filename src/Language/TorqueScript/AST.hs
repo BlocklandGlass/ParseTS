@@ -1,17 +1,3 @@
------------------------------------------------------------------------------
---
--- Module      :  Language.TorqueScript.AST
--- Copyright   :
--- License     :  AllRightsReserved
---
--- Maintainer  :  teo@nullable.se
--- Stability   :
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
-
 module Language.TorqueScript.AST where
 
 import Text.Parsec.Pos(SourcePos)
@@ -27,6 +13,9 @@ type Block = [WithSourcePos Statement]
 data WithSourcePos a = WithSourcePos SourcePos a
                    deriving (Eq, Show)
 type SPExpression = WithSourcePos Expression
+
+instance Functor WithSourcePos where
+    fmap f (WithSourcePos pos a) = WithSourcePos pos $ f a
 
 data ObjectMember = ObjectMember VariableName SPExpression
                   deriving (Eq, Show)
