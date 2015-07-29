@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Language.TorqueScript.Parser (parseTokens, parseTS) where
 
 import Language.TorqueScript.AST
@@ -16,6 +18,7 @@ import Control.Monad.Identity(Identity)
 import Data.List
 import Data.Maybe(fromMaybe, catMaybes)
 import Data.Text(Text)
+import Debug.Trace
 
 type TSState = ()
 type Parser a = Parsec [(SourcePos, Token)] TSState a
@@ -136,7 +139,9 @@ maybeAssignment = do
         _ -> return e
 
 opTable :: SourcePos -> OperatorTable [(SourcePos, Token)] TSState Identity Expression
-opTable beforePos = [ [prefix InvertToken BoolInvertExpression]
+opTable beforePos = [ [prefix InvertToken BoolInvertExpression
+                      ,prefix SubtractToken (NumberSubtractExpression $ WithSourcePos beforePos $ NumberLiteralExpression "0")
+                      ]
                     , [binLeft MultiplyToken NumberMultiplyExpression, binLeft DivideToken NumberDivideExpression, binLeft ModuloToken NumberModuloExpression]
                     , [binLeft AddToken NumberAddExpression, binLeft SubtractToken NumberSubtractExpression]
                     , [binLeft AppendToken StringAppendExpression
@@ -153,6 +158,8 @@ opTable beforePos = [ [prefix InvertToken BoolInvertExpression]
                       ,binLeft StrEqualsToken StringEqualsExpression
                       ,binLeft StrNoEqualsToken StringNoEqualsExpression
                       ]
+                    , [binLeft AndToken BoolAndExpression]
+                    , [binLeft OrToken BoolOrExpression]
                     ]
     where binary opToken func = Infix $ do
               _ <- staticToken opToken
@@ -208,6 +215,19 @@ forStatement = staticToken ForKeyword
            <*> optionMaybe (withSourcePos expr))
            <*> blockOrStatement
 
+whileStatement :: Parser Statement
+whileStatement = staticToken WhileKeyword
+              *> (WhileStatement
+             <$> parens (withSourcePos expr)
+             <*> blockOrStatement)
+
+doWhileStatement :: Parser Statement
+doWhileStatement = staticToken DoKeyword
+                *> (flip DoWhileStatement
+               <$> blockOrStatement
+               <*> parens (withSourcePos expr)
+               <*  semicolon)
+
 returnStatement :: Parser Statement
 returnStatement = staticToken ReturnKeyword
                *> (ReturnStatement
@@ -220,6 +240,8 @@ statement = choice
           , ifStatement
           , switchStatement
           , forStatement
+          , whileStatement
+          , doWhileStatement
           , returnStatement
           , BreakStatement <$ staticToken BreakKeyword <* semicolon
           , ContinueStatement <$ staticToken ContinueKeyword <* semicolon
@@ -269,4 +291,10 @@ parseTokens :: SourceName -> [(SourcePos, Token)] -> Either ParseError [TopLevel
 parseTokens = parse (many topLevel <* eof)
 
 parseTS :: SourceName -> Text -> Either ParseError [TopLevel]
-parseTS name input = tokenize name input >>= parseTokens name
+parseTS name input = traceIt <$> tokenize name input >>= parseTokens name
+    where
+#ifdef FLAG_DEBUG
+          traceIt = fmap traceShowId
+#else
+          traceIt = id
+#endif

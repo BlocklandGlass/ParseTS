@@ -3,4 +3,4 @@ sudo: false
 ghc:
   - 7.8 # Current Haskell Platform
 script:
-  - cabal configure && cabal build && cabal run
+  - cabal configure -fci -fdebug && cabal build && cabal run

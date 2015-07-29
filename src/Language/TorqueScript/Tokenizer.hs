@@ -10,11 +10,15 @@ import Control.Applicative hiding(many, (<|>))
 withSourcePos :: Parser a -> Parser (SourcePos, a)
 withSourcePos parser = (,) <$> getPosition <*> parser
 
-anyExcept :: Char -> Parser Char
-anyExcept character = satisfy (/= character)
+anyExcept :: String -> Parser Char
+anyExcept characters = satisfy (`notElem` characters)
 
 stringChar :: Char -> Parser String
-stringChar surrounding = try (string ['\\', surrounding]) <|> ((: []) <$> anyExcept surrounding)
+stringChar surrounding = choice $ try <$>
+                       [ string ['\\', surrounding]
+                       , string "\\\\"
+                       , (: []) <$> anyExcept [surrounding, '\r', '\n']
+                       ]
 
 anyStringLiteral :: Char -> Parser Token
 anyStringLiteral surrounding = StrToken . concat <$> (char surrounding *> manyTill (stringChar surrounding) (char surrounding))
@@ -52,6 +56,8 @@ keyword = choice $ try <$>
     , IfKeyword <$ string "if"
     , ElseKeyword <$ string "else"
     , ForKeyword <$ string "for"
+    , WhileKeyword <$ string "while"
+    , DoKeyword <$ string "do"
     , BreakKeyword <$ string "break"
     , ContinueKeyword <$ string "continue"
     , StrSwitchKeyword <$ string "switch$"
@@ -72,8 +78,8 @@ nameChars :: Parser String
 nameChars = (:) <$> nameFirstChar <*> many nameChar
 varNameChars :: Parser String
 varNameChars = (++) <$> nameChars <*> namespaceSuffixes
-    where namespaceSuffix = (++) <$> many1 (char ':') <*> many nameChar
-          namespaceSuffixes = concat <$> many namespaceSuffix
+    where namespaceSuffix = (++) <$> many1 (char ':') <*> many1 nameChar
+          namespaceSuffixes = concat <$> many (try namespaceSuffix)
 
 name :: Parser Token
 name = NameToken <$> nameChars
@@ -101,7 +107,10 @@ comma :: Parser Token
 comma = CommaToken <$ char ','
 
 assign :: Parser Token
-assign = AssignToken <$ char '=' <* notFollowedBy (char '=')
+assign = try (AssignToken <$ char '=' <* notFollowedBy (char '='))
+
+questionMark :: Parser Token
+questionMark = QuestionMarkToken <$ char '?'
 
 doubleColon :: Parser Token
 doubleColon = DoubleColonToken <$ try (string "::")
@@ -119,14 +128,17 @@ whitespace :: Parser (Maybe a)
 whitespace = Nothing <$ many1 (char ' ' <|> char '\t' <|> char '\n' <|> char '\r')
 
 comparison :: Parser Token
-comparison = try $ choice
+comparison = choice $ try <$>
     [ NumEqualsToken <$ string "=="
+    , NumNoEqualsToken <$ string "!="
     , LessThanToken <$ char '<' <* notFollowedBy (char '=')
     , LessThanOrEqualsToken <$ string "<="
     , GreaterThanToken <$ char '>' <* notFollowedBy (char '=')
     , GreaterThanOrEqualsToken <$ string ">="
     , StrEqualsToken <$ string "$="
     , StrNoEqualsToken <$ string "!$="
+    , OrToken <$ string "||"
+    , AndToken <$ string "&&"
     ]
 
 strOps :: Parser Token
@@ -161,6 +173,7 @@ tsToken = choice $ withSourcePos <$>
     , comparison
     , globalVarName
     , localVarName
+    , questionMark
     , doubleColon
     , singleColon
     , dot

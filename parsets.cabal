@@ -9,20 +9,36 @@ category: Development
 author: Teo Klestrup
 data-dir: ""
 
+flag ci
+    description:   Fail faster in CI environments
+    default:       False
+
+flag debug
+    description:   Extra debug output
+    default:       False
+
 executable parsets
-    build-depends: base >=4.7 && <4.8,
+    build-depends: base >=4.7 && <4.9,
                    parsec >=3.1.9 && <3.2,
-                   text >=1.1 && <1.2,
-                   mtl >=2.1.3 && <2.2,
+                   text >=1.1 && <1.3,
+                   mtl >=2.1.3 && <2.3,
                    aeson >=0.9 && <0.10,
                    unordered-containers >=0.2.5 && <0.3,
-                   bytestring >=0.10.4 && <0.11
+                   bytestring >=0.10.4 && <0.11,
+                   directory >=1.2.3 && <1.3,
+                   filepath >=1.4 && <1.5
     main-is: Main.hs
     buildable: True
     default-language: Haskell2010
     default-extensions: OverloadedStrings,
                         FlexibleInstances
-    ghc-options:   -Wall -Werror
+    other-extensions:   CPP
+    if flag(ci)
+        ghc-options:   -Wall -Werror
+    else
+        ghc-options:   -Wall
+    if flag(debug)
+        cpp-options:   -DFLAG_DEBUG
     hs-source-dirs: src
     other-modules: Language.TorqueScript.AST
                    Language.TorqueScript.Tokens

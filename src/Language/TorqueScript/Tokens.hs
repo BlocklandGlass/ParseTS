@@ -14,6 +14,8 @@ data Token = StrToken String
            | IfKeyword
            | ElseKeyword
            | ForKeyword
+           | WhileKeyword
+           | DoKeyword
            | BreakKeyword
            | ContinueKeyword
            | SwitchKeyword
@@ -35,6 +37,7 @@ data Token = StrToken String
            | SemicolonToken
            | CommaToken
            | AssignToken
+           | QuestionMarkToken
            | DoubleColonToken
            | SingleColonToken
            | DotToken
@@ -61,6 +64,8 @@ data Token = StrToken String
            | DecrementToken
            -- Bool operations
            | InvertToken
+           | OrToken
+           | AndToken
            deriving (Eq, Show)
 
 getStrToken :: Token -> Maybe String

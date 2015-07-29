@@ -5,9 +5,12 @@ module Main (main) where
 import Language.TorqueScript
 import Language.TorqueScript.AST(WithSourcePos(..))
 
+import Control.Applicative
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
 import qualified Data.HashMap.Strict as M
+import System.Directory
+import System.FilePath
 import System.Exit
 import Text.Parsec.Pos
 
@@ -33,7 +36,25 @@ instance ToJSON SourcePos where
                , "file" .= sourceName pos
                ]
 
-main :: IO ()
-main = do
-    analysisResult <- analyzeFromFile "test.cs"
+mainFile :: FilePath -> IO ()
+mainFile path = do
+    putStrLn $ "Parsing " ++ path
+    analysisResult <- analyzeFromFile path
     either (\a -> print a >> exitFailure) (BSC8.putStrLn . encode) analysisResult
+
+fileTree :: FilePath -> FilePath -> IO [FilePath]
+fileTree _ "." = return []
+fileTree _ ".." = return []
+fileTree _ ".git" = return []
+fileTree base cur = do
+    let path = base </> cur
+    isDirectory <- doesDirectoryExist path
+    if isDirectory then do
+        files <- getDirectoryContents path
+        subtrees <- sequence $ fileTree path <$> files
+        return $ concat subtrees
+    else return $ filter isTS [path]
+    where isTS filename = takeExtension filename `elem` [".cs", ".gui"]
+
+main :: IO ()
+main = fileTree "." "BlocklandGlass" >>= sequence_ . fmap mainFile

@@ -54,6 +54,8 @@ data Statement = ExprStatement SPExpression
                | NumSwitchStatement { numSwitchStmtCond :: SPExpression, numSwitchStmtBody :: SwitchCases }
                | StrSwitchStatement { strSwitchStmtCond :: SPExpression, strSwitchStmtBody :: SwitchCases }
                | ForStatement { forStmtSetup :: Maybe SPExpression, forStmtCond :: SPExpression, forStmtBetween :: Maybe SPExpression, forStmtBody :: Block }
+               | WhileStatement { whileStmtCond :: SPExpression, whileStmtBody :: Block }
+               | DoWhileStatement { doWhileStmtCond :: SPExpression, doWhileStmtBody :: Block }
                | ReturnStatement (Maybe SPExpression)
                | BreakStatement
                | ContinueStatement
