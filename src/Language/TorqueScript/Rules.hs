@@ -11,8 +11,8 @@ type Complaint = WithSourcePos String
 
 data AnalysisResult = AnalysisResult
                     { analysisComplaints :: [Complaint]
-                    , functions :: [WithSourcePos FunctionName]
-                    , packages :: [WithSourcePos PackageName]
+                    , analysisFunctions :: [WithSourcePos FunctionName]
+                    , analysisPackages :: [WithSourcePos PackageName]
                     }
                     deriving (Eq, Show)
 

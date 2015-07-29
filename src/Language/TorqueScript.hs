@@ -1,4 +1,4 @@
-module Language.TorqueScript(analyze, analyzeFromFile) where
+module Language.TorqueScript(analyze, analyzeFromFile, AnalysisResult(..)) where
 
 import Language.TorqueScript.Parser
 import Language.TorqueScript.Rules
