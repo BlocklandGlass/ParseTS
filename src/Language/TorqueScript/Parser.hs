@@ -25,6 +25,7 @@ import Text.Parsec.Pos
 import Text.Parsec.Expr
 
 import Control.Applicative hiding((<|>), many)
+import Control.Monad(join)
 import Control.Monad.Identity(Identity)
 import Data.List
 import Data.Maybe(fromMaybe, catMaybes)
@@ -91,10 +92,10 @@ variableRef = maybeIndexed <$> variable <*> optionMaybe index
               maybeIndexed var Nothing = var
 
 nameRef :: Parser Expression
-nameRef = NameLiteralExpression <$> nameToken
+nameRef = StrLiteralExpression <$> nameToken
 
-functionCall :: Parser Expression
-functionCall = FunctionCallExpression
+functionCall :: Parser Call
+functionCall = FunctionCall
            <$> try (functionNameToken <* staticToken ParenBeginToken) -- Not using parens since we commit after the opening paren
            <*> withSourcePos expr `sepBy` comma
            <*  staticToken ParenEndToken
@@ -104,7 +105,7 @@ objectBody = braces
            $ many
            $ ObjectMember
          <$> nameToken
-         <*> (staticToken AssignToken *> expr)
+         <*> (staticToken AssignToken *> withSourcePos expr)
          <*  semicolon
 
 newObject :: Parser Expression
@@ -117,7 +118,7 @@ newObject = staticToken NewKeyword
 
 term :: Parser Expression
 term = choice
-     [ functionCall
+     [ CallExpression <$> functionCall
      , literal
      , ReferenceExpression <$> variableRef
      , newObject
@@ -127,52 +128,56 @@ term = choice
 
 maybeFieldAccess :: Parser Expression
 maybeFieldAccess = do
+    pos <- getPosition
     t <- term
     fieldAccesses <- many fieldAccess
-    return $ foldl (flip ($)) t fieldAccesses
+    return $ foldl (flip ($)) t ((. WithSourcePos pos) <$> fieldAccesses)
     where fieldAccess = staticToken DotToken *> (flip ($) <$> nameToken <*> choice [indexRef, methodCall, fieldRef])
           fieldRef = return (\name e -> ReferenceExpression $ FieldReference e name)
           indexRef = brackets $ (\indexes name e -> ReferenceExpression $ IndexReference (FieldReference e name) indexes) <$> withSourcePos expr `sepBy` comma
-          methodCall = parens $ (\args name e -> MethodCallExpression e name args) <$> withSourcePos expr `sepBy` comma
+          methodCall = parens $ (\args name e -> CallExpression $ MethodCall e name args) <$> withSourcePos expr `sepBy` comma
 
 maybeAssignment :: Parser Expression
 maybeAssignment = do
     e <- maybeFieldAccess
     case e of
         ReferenceExpression ref -> choice
-            [ AssignExpression ref <$ staticToken AssignToken <*> expr
+            [ AssignExpression ref <$ staticToken AssignToken <*> withSourcePos expr
             , NumberIncrementExpression ref <$ staticToken IncrementToken
             , NumberDecrementExpression ref <$ staticToken DecrementToken
             , return e
             ]
         _ -> return e
 
-opTable :: OperatorTable [(SourcePos, Token)] TSState Identity Expression
-opTable = [ [prefix InvertToken BoolInvertExpression]
-          , [binLeft MultiplyToken NumberMultiplyExpression, binLeft DivideToken NumberDivideExpression, binLeft ModuloToken NumberModuleExpression]
-          , [binLeft AddToken NumberAddExpression, binLeft SubtractToken NumberSubtractExpression]
-          , [binLeft AppendToken StringAppendExpression
-            ,binLeft SpcKeyword (strBetween " ")
-            ,binLeft TabKeyword (strBetween "\t")
-            ,binLeft NlKeyword (strBetween "\r\n")
-            ]
-          , [binLeft NumEqualsToken NumberEqualsExpression
-            ,binLeft NumNoEqualsToken NumberNoEqualsExpression
-            ,binLeft LessThanToken NumberLessThanExpression
-            ,binLeft LessThanOrEqualsToken NumberLessThanOrEqualsExpression
-            ,binLeft GreaterThanToken NumberGreaterThanExpression
-            ,binLeft GreaterThanOrEqualsToken NumberGreaterThanOrEqualsExpression
-            ,binLeft StrEqualsToken StringEqualsExpression
-            ,binLeft StrNoEqualsToken StringNoEqualsExpression
-            ]
-          ]
-    where binary opToken func = Infix (func <$ staticToken opToken)
+opTable :: SourcePos -> OperatorTable [(SourcePos, Token)] TSState Identity Expression
+opTable beforePos = [ [prefix InvertToken BoolInvertExpression]
+                    , [binLeft MultiplyToken NumberMultiplyExpression, binLeft DivideToken NumberDivideExpression, binLeft ModuloToken NumberModuloExpression]
+                    , [binLeft AddToken NumberAddExpression, binLeft SubtractToken NumberSubtractExpression]
+                    , [binLeft AppendToken StringAppendExpression
+                      ,binLeft SpcKeyword (strBetween " ")
+                      ,binLeft TabKeyword (strBetween "\t")
+                      ,binLeft NlKeyword (strBetween "\r\n")
+                      ]
+                    , [binLeft NumEqualsToken NumberEqualsExpression
+                      ,binLeft NumNoEqualsToken NumberNoEqualsExpression
+                      ,binLeft LessThanToken NumberLessThanExpression
+                      ,binLeft LessThanOrEqualsToken NumberLessThanOrEqualsExpression
+                      ,binLeft GreaterThanToken NumberGreaterThanExpression
+                      ,binLeft GreaterThanOrEqualsToken NumberGreaterThanOrEqualsExpression
+                      ,binLeft StrEqualsToken StringEqualsExpression
+                      ,binLeft StrNoEqualsToken StringNoEqualsExpression
+                      ]
+                    ]
+    where binary opToken func = Infix $ do
+              staticToken opToken
+              afterPos <- getPosition
+              return (\a b -> func (WithSourcePos beforePos a) (WithSourcePos afterPos b))
           binLeft opToken func = binary opToken func AssocLeft
-          strBetween between a b = a `StringAppendExpression` StrLiteralExpression between `StringAppendExpression` b
-          prefix opToken func = Prefix (func <$ staticToken opToken)
+          strBetween between a b = a `StringAppendExpression` WithSourcePos beforePos (WithSourcePos beforePos (StrLiteralExpression between) `StringAppendExpression` b)
+          prefix opToken func = Prefix (func . WithSourcePos beforePos <$ staticToken opToken)
 
 expr :: Parser Expression
-expr = buildExpressionParser opTable maybeAssignment
+expr = join (buildExpressionParser <$> (opTable <$> getPosition) <*> return maybeAssignment)
 
 semicolon :: Parser ()
 semicolon = () <$ staticToken SemicolonToken
@@ -189,7 +194,7 @@ ifStatement = staticToken IfKeyword
 switchCase :: Parser SwitchCase
 switchCase = staticToken CaseKeyword
           *> (SwitchCase
-         <$> expr
+         <$> withSourcePos expr
          <*  staticToken SingleColonToken
          <*> many (withSourcePos statement))
 
@@ -225,7 +230,7 @@ returnStatement = staticToken ReturnKeyword
 
 statement :: Parser Statement
 statement = choice
-          [ ExprStatement <$> expr <* semicolon
+          [ ExprStatement <$> withSourcePos expr <* semicolon
           , ifStatement
           , switchStatement
           , forStatement
@@ -240,6 +245,7 @@ block = braces $ many $ withSourcePos statement
 blockOrStatement :: Parser Block
 blockOrStatement = block <|> ((: []) <$> withSourcePos statement)
 
+function :: Parser Function
 function = staticToken FunctionKeyword
         *> (Function
        <$> functionNameToken
@@ -251,12 +257,15 @@ function = staticToken FunctionKeyword
 functionDef :: Parser Definition
 functionDef = FunctionDef <$> function
 
+package :: Parser Package
+package = staticToken PackageKeyword
+       *> (Package
+      <$> nameToken
+      <*> braces (many $ withSourcePos function)
+      <*  semicolon)
+
 packageDef :: Parser Definition
-packageDef = staticToken PackageKeyword
-          *> (PackageDef
-         <$> nameToken
-         <*> braces (many $ withSourcePos function)
-         <*  semicolon)
+packageDef = PackageDef <$> package
 
 definition :: Parser Definition
 definition = choice
