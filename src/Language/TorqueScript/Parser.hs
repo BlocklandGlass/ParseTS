@@ -18,7 +18,7 @@ import Control.Monad.Identity(Identity)
 import Data.List
 import Data.Maybe(fromMaybe, catMaybes)
 import Data.Text(Text)
-#ifdef DEBUG_FLAG
+#ifdef FLAG_DEBUG
 import Debug.Trace
 #endif
 
