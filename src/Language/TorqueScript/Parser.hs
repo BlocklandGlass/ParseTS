@@ -1,17 +1,3 @@
------------------------------------------------------------------------------
---
--- Module      :  Language.TorqueScript.Parser
--- Copyright   :
--- License     :  AllRightsReserved
---
--- Maintainer  :  teo@nullable.se
--- Stability   :
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
-
 module Language.TorqueScript.Parser (parseTokens, parseTS) where
 
 import Language.TorqueScript.AST

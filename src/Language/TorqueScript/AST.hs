@@ -1,17 +1,3 @@
------------------------------------------------------------------------------
---
--- Module      :  Language.TorqueScript.AST
--- Copyright   :
--- License     :  AllRightsReserved
---
--- Maintainer  :  teo@nullable.se
--- Stability   :
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
-
 module Language.TorqueScript.AST where
 
 import Text.Parsec.Pos(SourcePos)
