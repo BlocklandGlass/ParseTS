@@ -10,7 +10,7 @@ import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
 import qualified Data.HashMap.Strict as M
 import System.Directory
-import System.FilePath
+import System.FilePath((</>), takeExtension)
 import System.Exit
 import Text.Parsec.Pos
 
