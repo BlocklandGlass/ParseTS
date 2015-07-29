@@ -5,4 +5,5 @@ ghc:
 install:
   - cabal install --only-dependencies --enable-tests --jobs
 script:
+  - cabal configure -fci -fdebug && cabal build
   - cabal configure -fci && cabal build && cabal run -- BlocklandGlass
