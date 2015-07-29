@@ -72,6 +72,8 @@ instance HasSubExprs Statement where
     walkSubExprs (NumSwitchStatement expr cases) = exprAndSubs expr ++ walkSubExprs cases
     walkSubExprs (StrSwitchStatement expr cases) = exprAndSubs expr ++ walkSubExprs cases
     walkSubExprs (ForStatement setup cond between body) = exprAndSubsMaybe setup ++ exprAndSubs cond ++ exprAndSubsMaybe between ++ walkSubExprs body
+    walkSubExprs (WhileStatement cond body) = exprAndSubs cond ++ walkSubExprs body
+    walkSubExprs (DoWhileStatement cond body) = exprAndSubs cond ++ walkSubExprs body
     walkSubExprs (ReturnStatement expr) = exprAndSubsMaybe expr
     walkSubExprs BreakStatement = []
     walkSubExprs ContinueStatement = []
