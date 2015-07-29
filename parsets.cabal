@@ -17,11 +17,13 @@ executable parsets
     main-is: Main.hs
     buildable: True
     default-language: Haskell2010
-    default-extensions: OverloadedStrings
+    default-extensions: OverloadedStrings,
+                        FlexibleInstances
     hs-source-dirs: src
     other-modules: Language.TorqueScript.AST
                    Language.TorqueScript.Tokens
                    Language.TorqueScript.Tokenizer
                    Language.TorqueScript.Parser
+                   Language.TorqueScript.Analysis
 
 
