@@ -9,7 +9,6 @@ import Control.Applicative
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
 import qualified Data.HashMap.Strict as M
-import Debug.Trace
 import System.Directory
 import System.Exit
 import System.Environment
