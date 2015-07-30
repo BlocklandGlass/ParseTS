@@ -7,3 +7,5 @@ install:
 script:
   - cabal configure -fci -fdebug && cabal build
   - cabal configure -fci && cabal build && cabal run -- BlocklandGlass
+notifications:
+  webhooks: https://webhooks.gitter.im/e/3f5dda8eb78aa8cc9b00

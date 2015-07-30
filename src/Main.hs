@@ -9,10 +9,12 @@ import Control.Applicative
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
 import qualified Data.HashMap.Strict as M
+import Debug.Trace
 import System.Directory
 import System.Exit
 import System.Environment
 import System.FilePath((</>), takeExtension)
+import System.IO
 import Text.Parsec.Pos
 
 instance ToJSON AnalysisResult where
@@ -39,7 +41,7 @@ instance ToJSON SourcePos where
 
 mainFile :: FilePath -> IO ()
 mainFile path = do
-    putStrLn $ "Parsing " ++ path
+    hPutStrLn stderr $ "Parsing " ++ path
     analysisResult <- analyzeFromFile path
     either (\a -> print a >> exitFailure) (BSC8.putStrLn . encode) analysisResult
 
