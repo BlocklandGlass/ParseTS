@@ -30,7 +30,7 @@ instance HasFunctions TopLevel where
 
 instance HasFunctions (WithSourcePos Definition) where
     allFunctions (WithSourcePos pos (FunctionDef func)) = [WithSourcePos pos func]
-    allFunctions (WithSourcePos _ (PackageDef (Package _ _))) = []
+    allFunctions (WithSourcePos _ (PackageDef (Package _ funcs))) = funcs
 
 class HasSubExprs a where
     walkSubExprs :: a -> [SPExpression]
