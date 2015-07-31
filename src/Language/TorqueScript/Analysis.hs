@@ -12,11 +12,11 @@ instance HasPackages a => HasPackages [a] where
 
 instance HasPackages TopLevel where
     allPackages (TopLevelDef def) = allPackages def
-    allPackages _ = []
+    allPackages (TopLevelStatement _) = []
 
 instance HasPackages (WithSourcePos Definition) where
     allPackages (WithSourcePos pos (PackageDef pkg)) = [WithSourcePos pos pkg]
-    allPackages _ = []
+    allPackages (WithSourcePos _ (FunctionDef _)) = []
 
 class HasFunctions a where
     allFunctions :: a -> [WithSourcePos Function]
@@ -26,11 +26,11 @@ instance HasFunctions a => HasFunctions [a] where
 
 instance HasFunctions TopLevel where
     allFunctions (TopLevelDef def) = allFunctions def
-    allFunctions _ = []
+    allFunctions (TopLevelStatement _) = []
 
 instance HasFunctions (WithSourcePos Definition) where
     allFunctions (WithSourcePos pos (FunctionDef func)) = [WithSourcePos pos func]
-    allFunctions _ = []
+    allFunctions (WithSourcePos _ (PackageDef (Package _ _))) = []
 
 class HasSubExprs a where
     walkSubExprs :: a -> [SPExpression]
