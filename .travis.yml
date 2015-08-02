@@ -2,8 +2,13 @@ language: haskell
 sudo: false
 ghc:
   - 7.8 # Current Haskell Platform
+cache:
+  directories:
+    - .cabal-sandbox
+before_cache:
+  - rm -rf .cabal-sandbox/logs .cabal-sandbox/packages
 install:
-  - cabal update && cabal install cabal-install
+  - cabal sandbox init && cabal update && cabal install cabal-install
   - test $COMPILER -eq ghcjs && cabal install ghcjs ghcjs-prim && ghcjs-boot || true
   - cabal install --only-dependencies --enable-tests --jobs --$COMPILER
 env:
