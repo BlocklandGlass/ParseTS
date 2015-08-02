@@ -9,6 +9,6 @@ env:
   - PARSETS_CMD=docs
 script:
   - cabal configure -fci -fdebug && cabal build
-  - cabal configure -fci && cabal build && cabal run $PARSETS_CMD BlocklandGlass
+  - cabal configure -fci && cabal build && cabal run -- $PARSETS_CMD BlocklandGlass
 notifications:
   webhooks: https://webhooks.gitter.im/e/3f5dda8eb78aa8cc9b00

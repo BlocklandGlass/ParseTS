@@ -3,7 +3,6 @@ module Language.TorqueScript.DocGen where
 import Language.TorqueScript.AST
 import Language.TorqueScript.Analysis
 
-import Control.Applicative
 import Text.Hamlet
 
 docFunctionId :: Function -> String
