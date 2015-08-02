@@ -6,10 +6,10 @@ import Language.TorqueScript.Analysis
 import Text.Hamlet
 
 docFunctionId :: Function -> String
-docFunctionId (Function name _ _) = "function-" ++ name
+docFunctionId (Function _ name _ _) = "function-" ++ name
 
 docFunction :: WithSourcePos Function -> Html
-docFunction (WithSourcePos _ function@(Function name args _)) = [shamlet|
+docFunction (WithSourcePos _ function@(Function docstring name args _)) = [shamlet|
 <div class="function" id=#{docFunctionId function}>
     <h3> #{name}
     $if not $ null args
@@ -18,6 +18,9 @@ docFunction (WithSourcePos _ function@(Function name args _)) = [shamlet|
             <ul>
                 $forall arg <- args
                     <li> %#{arg}
+    <div>
+        $forall docstringLine <- docstring
+            <p> #{docstringLine}
 |]
 
 docFunctions :: [WithSourcePos Function] -> Html

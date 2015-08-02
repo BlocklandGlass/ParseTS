@@ -64,6 +64,11 @@ withSourcePos parser = do
 comma :: Parser Token
 comma = staticToken CommaToken
 
+docComment :: Parser String
+docComment = satisfyMatch test <?> "DocCommentToken"
+    where test (DocCommentToken x) = Just x
+          test _ = Nothing
+
 literal :: Parser Expression
 literal = satisfyMatch test <?> "literal"
     where test (StrToken x) = Just $ StrLiteralExpression x
@@ -292,11 +297,12 @@ blockOrStatement :: Parser Block
 blockOrStatement = block <|> ((: []) <$> withSourcePos statement)
 
 function :: Parser Function
-function = staticToken FunctionKeyword
-        *> (Function
-       <$> functionNameToken
+function = Function
+       <$> many docComment
+       <*  staticToken FunctionKeyword
+       <*> functionNameToken
        <*> argList
-       <*> block)
+       <*> block
     where arguments = localVarToken `sepBy` comma
           argList = parens arguments
 

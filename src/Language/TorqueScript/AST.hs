@@ -7,6 +7,7 @@ type FunctionName = String
 type VariableName = String
 type FieldName = String
 type ObjectBase = String
+type DocComment = String
 
 type Block = [WithSourcePos Statement]
 
@@ -29,7 +30,7 @@ data TopLevel = TopLevelDef (WithSourcePos Definition)
               | TopLevelStatement (WithSourcePos Statement)
               deriving (Eq, Show)
 
-data Function = Function { funcDefName :: FunctionName, funcDefParams :: [VariableName], funcDefBody :: Block }
+data Function = Function { funcDefDocs :: [DocComment], funcDefName :: FunctionName, funcDefParams :: [VariableName], funcDefBody :: Block }
               deriving (Eq, Show)
 
 data Package = Package { pkgDefName :: PackageName, pkgDefBody :: [WithSourcePos Function] }

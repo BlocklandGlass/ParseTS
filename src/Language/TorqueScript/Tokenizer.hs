@@ -121,8 +121,14 @@ singleColon = SingleColonToken <$ char ':'
 dot :: Parser Token
 dot = DotToken <$ char '.'
 
-comment :: Parser (Maybe a)
-comment = Nothing <$ (try (string "//") *> manyTill anyChar (char '\n'))
+plainComment :: Parser (Maybe a)
+plainComment = Nothing <$ (try (string "//") *> manyTill anyChar (char '\n'))
+
+docComment :: Parser (Maybe (SourcePos, Token))
+docComment = Just <$> withSourcePos (DocCommentToken <$> (try (string "//|") *> manyTill anyChar (char '\n')))
+
+comment :: Parser (Maybe (SourcePos, Token))
+comment = docComment <|> plainComment
 
 whitespace :: Parser (Maybe a)
 whitespace = Nothing <$ many1 (char ' ' <|> char '\t' <|> char '\n' <|> char '\r')

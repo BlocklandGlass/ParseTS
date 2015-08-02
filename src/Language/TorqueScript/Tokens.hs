@@ -5,6 +5,7 @@ data Token = StrToken String
            | NameToken String
            | GlobalVarToken String
            | LocalVarToken String
+           | DocCommentToken String
            -- Keywords
            | FunctionKeyword
            | PackageKeyword

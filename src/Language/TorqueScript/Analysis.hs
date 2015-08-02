@@ -67,7 +67,7 @@ instance HasSubExprs Package where
     walkSubExprs (Package _ body) = walkSubExprs body
 
 instance HasSubExprs Function where
-    walkSubExprs (Function _ _ body) = walkSubExprs body
+    walkSubExprs (Function _ _ _ body) = walkSubExprs body
 
 instance HasSubExprs Statement where
     walkSubExprs (ExprStatement expr) = exprAndSubs expr
