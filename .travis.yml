@@ -16,7 +16,7 @@ install:
 env:
   - PARSETS_CMD=lint COMPILER=ghc
   - PARSETS_CMD=docs COMPILER=ghc
-  - PARSETS_CMD=docs COMPILER=ghcjs
+  # - PARSETS_CMD=docs COMPILER=ghcjs
 script:
   - cabal configure -fci -fdebug --$COMPILER && cabal build
   - cabal configure -fci --$COMPILER && cabal build && cabal run -- $PARSETS_CMD BlocklandGlass
