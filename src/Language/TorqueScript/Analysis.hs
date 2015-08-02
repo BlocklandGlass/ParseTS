@@ -4,6 +4,8 @@ import Language.TorqueScript.AST
 
 import Data.Maybe(catMaybes)
 
+type IncludePackaged = Bool
+
 class HasPackages a where
     allPackages :: a -> [WithSourcePos Package]
 
@@ -19,18 +21,19 @@ instance HasPackages (WithSourcePos Definition) where
     allPackages (WithSourcePos _ (FunctionDef _)) = []
 
 class HasFunctions a where
-    allFunctions :: a -> [WithSourcePos Function]
+    allFunctions :: IncludePackaged -> a -> [WithSourcePos Function]
 
 instance HasFunctions a => HasFunctions [a] where
-    allFunctions xs = xs >>= allFunctions
+    allFunctions includePackaged xs = xs >>= allFunctions includePackaged
 
 instance HasFunctions TopLevel where
-    allFunctions (TopLevelDef def) = allFunctions def
-    allFunctions (TopLevelStatement _) = []
+    allFunctions includePackaged (TopLevelDef def) = allFunctions includePackaged def
+    allFunctions _ (TopLevelStatement _) = []
 
 instance HasFunctions (WithSourcePos Definition) where
-    allFunctions (WithSourcePos pos (FunctionDef func)) = [WithSourcePos pos func]
-    allFunctions (WithSourcePos _ (PackageDef (Package _ funcs))) = funcs
+    allFunctions _ (WithSourcePos pos (FunctionDef func)) = [WithSourcePos pos func]
+    allFunctions True (WithSourcePos _ (PackageDef (Package _ funcs))) = funcs
+    allFunctions False (WithSourcePos _ (PackageDef _)) = []
 
 class HasSubExprs a where
     walkSubExprs :: a -> [SPExpression]

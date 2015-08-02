@@ -36,4 +36,4 @@ complainAboutEvilFunctions tree = catMaybes $ checkEvilCall <$> walkFunctionCall
           checkEvilCall (WithSourcePos pos (MethodCall _ name args)) = checkEvilCall $ WithSourcePos pos $ FunctionCall name args
 
 analyzeAST :: [TopLevel] -> AnalysisResult
-analyzeAST tree = AnalysisResult (complainAboutEvilFunctions tree) (fmap funcDefName <$> allFunctions tree) (fmap pkgDefName <$> allPackages tree)
+analyzeAST tree = AnalysisResult (complainAboutEvilFunctions tree) (fmap funcDefName <$> allFunctions True tree) (fmap pkgDefName <$> allPackages tree)
