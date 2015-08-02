@@ -11,7 +11,7 @@ install:
   - cabal sandbox init && cabal update && cabal install cabal-install
   - export PATH=.cabal-sandbox/bin:$PATH
   - cabal --version
-  - test $COMPILER = ghcjs && git clone https://github.com/ghcjs/ghcjs.git && git clone https://github.com/ghcjs/ghcjs-prim.git && cabal install ./ghcjs ./ghcjs-prim vector && ghcjs-boot || true
+  - test $COMPILER = ghcjs && git clone https://github.com/ghcjs/ghcjs.git && git clone https://github.com/ghcjs/ghcjs-prim.git && cabal install --force-reinstalls  ./ghcjs ./ghcjs-prim vector && ghcjs-boot || true
   - cabal install --$COMPILER --only-dependencies --enable-tests --jobs
 env:
   - PARSETS_CMD=lint COMPILER=ghc
