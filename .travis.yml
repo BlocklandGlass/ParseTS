@@ -9,8 +9,9 @@ before_cache:
   - rm -rf .cabal-sandbox/logs .cabal-sandbox/packages
 install:
   - cabal sandbox init && cabal update && cabal install cabal-install
+  - cabal --version
   - test $COMPILER -eq ghcjs && cabal install ghcjs ghcjs-prim && ghcjs-boot || true
-  - cabal install --only-dependencies --enable-tests --jobs --$COMPILER
+  - cabal install --$COMPILER --only-dependencies --enable-tests --jobs
 env:
   - PARSETS_CMD=lint COMPILER=ghc
   - PARSETS_CMD=docs COMPILER=ghc
