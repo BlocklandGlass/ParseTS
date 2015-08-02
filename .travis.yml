@@ -8,8 +8,8 @@ cache:
 before_cache:
   - rm -rf .cabal-sandbox/logs .cabal-sandbox/packages
 install:
-  - export PATH=.cabal-sandbox/bin:$PATH
   - cabal sandbox init && cabal update && cabal install cabal-install
+  - export PATH=.cabal-sandbox/bin:$PATH
   - cabal --version
   - test $COMPILER = ghcjs && git clone https://github.com/ghcjs/ghcjs.git && git clone https://github.com/ghcjs/ghcjs-prim.git && cabal install ./ghcjs ./ghcjs-prim && ghcjs-boot || true
   - cabal install --$COMPILER --only-dependencies --enable-tests --jobs
