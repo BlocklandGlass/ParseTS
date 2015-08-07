@@ -50,8 +50,11 @@ docPackages packages = [shamlet|
 
 docFile :: String -> [TopLevel] -> Html
 docFile name file = [shamlet|
-<h1> #{name}
-#{docFunctions $ allFunctions False file}
-#{docPackages $ allPackages file}
+<html>
+  <head>
+    <title> ParseTS - #{name}
+  <body>
+    <h1> #{name}
+    #{docFunctions $ allFunctions False file}
+    #{docPackages $ allPackages file}
 |]
-
