@@ -5,4 +5,4 @@ flags:
 packages:
 - '.'
 extra-deps: []
-resolver: lts-2.20
+resolver: lts-2.21
