@@ -1,0 +1,8 @@
+flags:
+  parsets:
+    debug: false
+    ci: false
+packages:
+- '.'
+extra-deps: []
+resolver: lts-2.20

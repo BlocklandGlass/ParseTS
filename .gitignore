@@ -65,4 +65,11 @@ cabal.sandbox.config
 *.aux
 *.hp
 
+### Stack
 
+.stack-work
+dist-stack
+
+### Nodejs
+
+node_modules
