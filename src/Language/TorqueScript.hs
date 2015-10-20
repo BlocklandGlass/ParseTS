@@ -10,7 +10,7 @@ import Control.Applicative
 import qualified Data.Text as T
 import qualified  Data.Text.IO as TIO
 import Text.Parsec.Pos(SourcePos)
-import Text.Parsec.Error(ParseError)
+import Text.Parsec.Error(ParseError, errorPos, errorMessages, messageString, showErrorMessages)
 
 tokenizeFromFile :: FilePath -> IO (Either ParseError [(SourcePos, Token)])
 tokenizeFromFile path = do
@@ -21,5 +21,17 @@ tokenizeFromFile path = do
 parseFromFile :: FilePath -> IO (Either ParseError [TopLevel])
 parseFromFile path = (>>= parseTokens path) <$> tokenizeFromFile path
 
-analyzeFromFile :: FilePath -> IO (Either ParseError AnalysisResult)
-analyzeFromFile path = fmap analyzeAST <$> parseFromFile path
+parseErrorAnalysisResult :: ParseError -> AnalysisResult
+parseErrorAnalysisResult err = AnalysisResult
+                               { analysisComplaints = [ WithSourcePos (errorPos err)
+                                                      $ ParserError
+                                                      $ showErrorMessages "or" "unknown parse error"
+                                                                          "expecting" "unexpected" "end of input"
+                                                      $ errorMessages err
+                                                      ]
+                               , analysisFunctions = []
+                               , analysisPackages = []
+                               }
+
+analyzeFromFile :: FilePath -> IO AnalysisResult
+analyzeFromFile path = either parseErrorAnalysisResult id . fmap analyzeAST <$> parseFromFile path

@@ -6,11 +6,22 @@ import Language.TorqueScript.AST
 import Control.Applicative
 import Data.Maybe
 
+data ComplaintSeverity = Fatal
+                       | Warning
+                       | Info
+                       deriving (Eq, Show)
+
 data Complaint = EvilFunctionCall FunctionName
+               | ParserError String
                deriving (Eq)
 
 instance Show Complaint where
-    show (EvilFunctionCall name) = "Call to evil function \"" ++ name ++ "\"! D:"
+    show (EvilFunctionCall name) = "Call to dangerous function: " ++ name
+    show (ParserError msg) = "Parser error: " ++ msg
+
+complaintSeverity :: Complaint -> ComplaintSeverity
+complaintSeverity (EvilFunctionCall _) = Warning
+complaintSeverity (ParserError _) = Fatal
 
 type SPComplaint = WithSourcePos Complaint
 

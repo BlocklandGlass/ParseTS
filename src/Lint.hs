@@ -8,7 +8,6 @@ import Language.TorqueScript.AST(WithSourcePos(..))
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
-import System.Exit
 import System.IO
 import Text.Parsec.Pos
 
@@ -42,4 +41,4 @@ mainFile :: FilePath -> IO ()
 mainFile path = do
     hPutStrLn stderr $ "Parsing " ++ path
     analysisResult <- analyzeFromFile path
-    either (\a -> print a >> exitFailure) (BSC8.putStrLn . encode) analysisResult
+    BSC8.putStrLn $ encode analysisResult
