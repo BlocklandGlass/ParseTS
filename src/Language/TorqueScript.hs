@@ -10,7 +10,7 @@ import Control.Applicative
 import qualified Data.Text as T
 import qualified  Data.Text.IO as TIO
 import Text.Parsec.Pos(SourcePos)
-import Text.Parsec.Error(ParseError, errorPos, errorMessages, messageString, showErrorMessages)
+import Text.Parsec.Error(ParseError, errorPos, errorMessages, showErrorMessages)
 
 tokenizeFromFile :: FilePath -> IO (Either ParseError [(SourcePos, Token)])
 tokenizeFromFile path = do

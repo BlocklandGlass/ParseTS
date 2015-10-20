@@ -3,7 +3,7 @@
 module Lint where
 
 import Language.TorqueScript
-import Language.TorqueScript.Rules(Complaint)
+import Language.TorqueScript.Rules(Complaint, complaintSeverity)
 import Language.TorqueScript.AST(WithSourcePos(..))
 
 import Data.Aeson
@@ -35,6 +35,7 @@ instance ToJSON SourcePos where
 instance ToJSON Complaint where
     toJSON complaint = object
                      [ "msg" .= show complaint
+                     , "severity" .= show (complaintSeverity complaint) 
                      ]
 
 mainFile :: FilePath -> IO ()
