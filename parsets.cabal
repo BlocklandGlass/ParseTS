@@ -50,3 +50,4 @@ executable parsets
                    Language.TorqueScript
                    Docs
                    Lint
+                   DumpTokens

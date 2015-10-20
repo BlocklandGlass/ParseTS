@@ -2,6 +2,7 @@ module Main(main) where
 
 import qualified Docs
 import qualified Lint
+import qualified DumpTokens
 
 import Control.Applicative
 import System.Directory
@@ -28,4 +29,5 @@ main = do
     case args of
         ["lint", path] -> fileTree path "" >>= sequence_ . fmap Lint.mainFile
         ["docs", path] -> fileTree path "" >>= sequence_ . fmap Docs.mainFile
-        _ -> error "Usage: parsets lint|docs <path>"
+        ["dump-tokens", path] -> fileTree path "" >>= sequence_ . fmap DumpTokens.mainFile
+        _ -> error "Usage: parsets lint|docs|dump-tokens <path>"
