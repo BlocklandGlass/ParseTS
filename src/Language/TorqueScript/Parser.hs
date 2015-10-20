@@ -34,6 +34,9 @@ satisfy :: (Token -> Bool) -> Parser Token
 satisfy test = satisfyMatch testToken
     where testToken x = if test x then Just x else Nothing
 
+nextPosition :: Parser SourcePos
+nextPosition = lookAhead (satisfy (const True) >> getPosition)
+
 staticToken :: Token -> Parser Token
 staticToken x = satisfy (== x) <?> show x
 
@@ -57,7 +60,7 @@ brackets = between (staticToken BracketBeginToken) (staticToken BracketEndToken)
 
 withSourcePos :: Parser a -> Parser (WithSourcePos a)
 withSourcePos parser = do
-    pos <- getPosition
+    pos <- nextPosition
     value <- parser
     return $ WithSourcePos pos value
 
@@ -140,8 +143,8 @@ term = choice
 
 maybeFieldAccess :: Parser Expression
 maybeFieldAccess = do
-    pos <- getPosition
     t <- term
+    pos <- getPosition
     fieldAccesses <- many fieldAccess
     return $ foldl (flip ($)) t ((. WithSourcePos pos) <$> fieldAccesses)
     where fieldAccess = staticToken DotToken *> (flip ($) <$> nameToken <*> choice [indexRef, methodCall, fieldRef])
@@ -152,7 +155,7 @@ maybeFieldAccess = do
 maybeAssignment :: Parser Expression
 maybeAssignment = do
     e <- maybeFieldAccess
-    pos <- getPosition
+    pos <- nextPosition
     case e of
         ReferenceExpression ref -> choice
             [ AssignExpression ref <$ staticToken AssignToken <*> withSourcePos expr
@@ -195,14 +198,14 @@ opTable beforePos = [ [prefix InvertToken BoolInvertExpression
                     ]
     where binary opToken func = Infix $ do
               _ <- staticToken opToken
-              afterPos <- getPosition
+              afterPos <- nextPosition
               return (\a b -> func (WithSourcePos beforePos a) (WithSourcePos afterPos b))
           binLeft opToken func = binary opToken func AssocLeft
           strBetween addBetween a b = a `StringAppendExpression` WithSourcePos beforePos (WithSourcePos beforePos (StrLiteralExpression addBetween) `StringAppendExpression` b)
           prefix opToken func = Prefix (func . WithSourcePos beforePos <$ staticToken opToken)
 
 ternaryTerm :: Parser Expression
-ternaryTerm = join (buildExpressionParser <$> (opTable <$> getPosition) <*> return maybeAssignment)
+ternaryTerm = join (buildExpressionParser <$> (opTable <$> nextPosition) <*> return maybeAssignment)
 
 ternaryExpr :: Parser Expression
 ternaryExpr = TernaryExpression
