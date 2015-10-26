@@ -4,7 +4,6 @@ import Language.TorqueScript.Analysis
 import Language.TorqueScript.AST
 
 import Control.Applicative
-import Data.Maybe
 
 data ComplaintSeverity = Info
                        | Warning
@@ -32,19 +31,46 @@ data AnalysisResult = AnalysisResult
                     }
                     deriving (Eq, Show)
 
-evilFunctions :: [String]
-evilFunctions = [ "eval"
-                , "call"
-                , "schedule"
-                ]
+type ExprRule = Expression -> [Complaint]
 
-complainAboutEvilFunctions :: HasSubExprs a => a -> [SPComplaint]
-complainAboutEvilFunctions tree = catMaybes $ checkEvilCall <$> walkFunctionCalls tree
-    where checkEvilCall :: WithSourcePos Call -> Maybe SPComplaint
-          checkEvilCall (WithSourcePos pos (FunctionCall "schedule" (_ : WithSourcePos _ (StrLiteralExpression name) : args))) = checkEvilCall $ WithSourcePos pos $ FunctionCall name args
-          checkEvilCall (WithSourcePos pos (FunctionCall name _)) | name `elem` evilFunctions = Just $ WithSourcePos pos $ EvilFunctionCall name
-                                                                  | otherwise = Nothing
-          checkEvilCall (WithSourcePos pos (MethodCall _ name args)) = checkEvilCall $ WithSourcePos pos $ FunctionCall name args
+evilFunction :: String -> ExprRule
+evilFunction name (CallExpression (FunctionCall calledName _)) | name == calledName = [EvilFunctionCall name]
+evilFunction name (CallExpression (MethodCall _ calledName args)) = evilFunction name (CallExpression (FunctionCall calledName args))
+evilFunction _ _ = []
+
+dynamicDispatchFunction :: String -> ([SPExpression] -> Maybe Expression) -> ExprRule
+dynamicDispatchFunction name tryExpand (CallExpression (MethodCall _ calledName args)) = dynamicDispatchFunction name tryExpand (CallExpression (FunctionCall calledName args))
+dynamicDispatchFunction name tryExpand (CallExpression (FunctionCall calledName args)) | name == calledName =
+  case tryExpand args of
+    Just simplified -> analyzeNodeOnly simplified -- The arguments are already expanded in the proper AST
+    Nothing -> [EvilFunctionCall name]
+dynamicDispatchFunction _ _ _ = []
+
+simplifyCall :: [SPExpression] -> Maybe Expression
+simplifyCall (WithSourcePos _ (StrLiteralExpression name) : args) = Just $ CallExpression $ FunctionCall name args
+simplifyCall _ = Nothing
+
+callRule :: ExprRule
+callRule = dynamicDispatchFunction "call" simplifyCall
+
+simplifySchedule :: [SPExpression] -> Maybe Expression
+simplifySchedule (WithSourcePos _ (NumberLiteralExpression "0") : xs) = simplifyCall xs
+simplifySchedule xs = simplifyCall xs
+
+scheduleRule :: ExprRule
+scheduleRule = dynamicDispatchFunction "schedule" simplifySchedule
+
+exprRules :: [ExprRule]
+exprRules = [ evilFunction "eval"
+            , callRule
+            , scheduleRule
+            ]
+
+analyzeNodeOnly :: Expression -> [Complaint]
+analyzeNodeOnly node = concat $ exprRules <*> [node]
+
+analyzeNode :: HasSubExprs a => a -> [SPComplaint]
+analyzeNode node = walkSubExprs node >>= flattenWsp . fmap analyzeNodeOnly
 
 analyzeAST :: [TopLevel] -> AnalysisResult
-analyzeAST tree = AnalysisResult (complainAboutEvilFunctions tree) (fmap funcDefName <$> allFunctions True tree) (fmap pkgDefName <$> allPackages tree)
+analyzeAST tree = AnalysisResult (analyzeNode tree) (fmap funcDefName <$> allFunctions True tree) (fmap pkgDefName <$> allPackages tree)

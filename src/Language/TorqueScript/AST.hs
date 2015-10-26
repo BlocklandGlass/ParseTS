@@ -1,5 +1,6 @@
 module Language.TorqueScript.AST where
 
+import Control.Applicative((<$>))
 import Text.Parsec.Pos(SourcePos)
 
 type PackageName = String
@@ -20,6 +21,9 @@ type SPExpression = WithSourcePos Expression
 
 instance Functor WithSourcePos where
     fmap f (WithSourcePos pos a) = WithSourcePos pos $ f a
+
+flattenWsp :: WithSourcePos [a] -> [WithSourcePos a]
+flattenWsp (WithSourcePos pos a) = WithSourcePos pos <$> a
 
 data NewObject = NewObject ObjectBase (Maybe SPExpression) [ObjectMember]
                deriving (Eq, Show)
