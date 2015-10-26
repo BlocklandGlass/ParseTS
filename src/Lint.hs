@@ -3,9 +3,10 @@
 module Lint where
 
 import Language.TorqueScript
-import Language.TorqueScript.Rules(Complaint, complaintSeverity)
+import Language.TorqueScript.Rules(Complaint, ComplaintSeverity(..), complaintSeverity)
 import Language.TorqueScript.AST(WithSourcePos(..))
 
+import Control.Applicative((<$>))
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
 import System.IO
@@ -38,8 +39,13 @@ instance ToJSON Complaint where
                      , "severity" .= show (complaintSeverity complaint) 
                      ]
 
-mainFile :: FilePath -> IO ()
+worstSeverity :: [Complaint] -> Maybe ComplaintSeverity
+worstSeverity complaints = maximum severities
+    where severities = (Just . complaintSeverity <$> complaints) ++ [Nothing]
+
+mainFile :: FilePath -> IO (Maybe ComplaintSeverity)
 mainFile path = do
     hPutStrLn stderr $ "Parsing " ++ path
     analysisResult <- analyzeFromFile path
     BSC8.putStrLn $ encode analysisResult
+    return $ worstSeverity $ wspValue <$> analysisComplaints analysisResult

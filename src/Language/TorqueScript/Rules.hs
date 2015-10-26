@@ -6,10 +6,10 @@ import Language.TorqueScript.AST
 import Control.Applicative
 import Data.Maybe
 
-data ComplaintSeverity = Fatal
+data ComplaintSeverity = Info
                        | Warning
-                       | Info
-                       deriving (Eq, Show)
+                       | Fatal
+                       deriving (Eq, Show, Ord)
 
 data Complaint = EvilFunctionCall FunctionName
                | ParserError String

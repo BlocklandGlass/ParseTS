@@ -11,7 +11,10 @@ type DocComment = String
 
 type Block = [WithSourcePos Statement]
 
-data WithSourcePos a = WithSourcePos SourcePos a
+data WithSourcePos a = WithSourcePos
+                      { wspSourcePos :: SourcePos
+                      , wspValue :: a
+                      }
                    deriving (Eq, Show)
 type SPExpression = WithSourcePos Expression
 
