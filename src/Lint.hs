@@ -6,7 +6,6 @@ import Language.TorqueScript
 import Language.TorqueScript.Rules(Complaint, ComplaintSeverity(..), complaintSeverity)
 import Language.TorqueScript.AST(WithSourcePos(..))
 
-import Control.Applicative((<$>))
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSC8
 import System.IO

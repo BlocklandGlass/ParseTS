@@ -1,6 +1,5 @@
 module Language.TorqueScript.AST where
 
-import Control.Applicative((<$>))
 import Text.Parsec.Pos(SourcePos)
 
 type PackageName = String

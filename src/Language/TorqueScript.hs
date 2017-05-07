@@ -6,7 +6,6 @@ import Language.TorqueScript.Tokenizer(tokenize)
 import Language.TorqueScript.Parser
 import Language.TorqueScript.Rules
 
-import Control.Applicative
 import qualified Data.Text as T
 import qualified  Data.Text.IO as TIO
 import Text.Parsec.Pos(SourcePos)

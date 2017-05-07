@@ -6,7 +6,6 @@ import qualified DumpTokens
 
 import Language.TorqueScript.Rules(ComplaintSeverity(..))
 
-import Control.Applicative
 import System.Directory
 import System.Environment
 import System.FilePath((</>), takeExtension)

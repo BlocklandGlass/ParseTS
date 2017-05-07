@@ -3,7 +3,6 @@ module Language.TorqueScript.DocGen where
 import Language.TorqueScript.AST
 import Language.TorqueScript.Analysis
 
-import Control.Applicative
 import Control.Monad
 import Text.Blaze.Html5((!), toValue, toMarkup, Html)
 import qualified Text.Blaze.Html5 as H

@@ -5,7 +5,6 @@ import Text.Parsec
 import Text.Parsec.Text
 import Data.Maybe
 import Data.Text(Text)
-import Control.Applicative hiding(many, (<|>))
 
 withSourcePos :: Parser a -> Parser (SourcePos, a)
 withSourcePos parser = (,) <$> getPosition <*> parser

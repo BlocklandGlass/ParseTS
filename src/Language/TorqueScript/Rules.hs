@@ -3,8 +3,6 @@ module Language.TorqueScript.Rules where
 import Language.TorqueScript.Analysis
 import Language.TorqueScript.AST
 
-import Control.Applicative
-
 data ComplaintSeverity = Info
                        | Warning
                        | Fatal

@@ -12,7 +12,6 @@ import Text.Parsec.Error
 import Text.Parsec.Pos
 import Text.Parsec.Expr
 
-import Control.Applicative hiding((<|>), many)
 import Control.Monad(join)
 import Control.Monad.Identity(Identity)
 import Data.List
